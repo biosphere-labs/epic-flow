@@ -4,9 +4,9 @@ description: >
   Draw an idea out of the user by Socratic, reverse-prompting questions, find
   its constraints, and write an accepted brief (the PRD): problem, decisions,
   approach, success and delivery, before any codebase plan. Stage 2 of Epic
-  Flow. Takes a stub, a draft, a plan file, a pasted list or findings report,
+  Flow. Takes a parked idea, a draft, a plan file, a pasted list or findings report,
   or a bare idea. Use when the user wants to brainstorm, write a PRD, develop
-  a stub, turn a rough idea or an existing plan into a brief, or runs
+  a parked idea, turn a rough idea or an existing plan into a brief, or runs
   /epic-flow:brainstorm.
 ---
 
@@ -18,10 +18,10 @@ Turn an idea into a brief the technical plan can build on. This stage decides th
 
 ## What it starts from
 
-- A stub or a draft: `.epic-flow/<slug>/brief.md`.
+- A parked idea or a draft: `.epic-flow/<slug>/brief.md`.
 - A plan file, a pasted list or a findings report. These are input to this stage, never a reason to skip it. Decisions the source records as the user's are `answered`; the rest are `assumed`, with the source as **Source**. Put the source's path under **Where it came up**.
 - A list gives one brief per item. Items that are one change share a brief. Say which you joined in the draft.
-- A bare idea: write the stub first (see `epic-flow:stub`), then go on.
+- A bare idea: park it first (see `epic-flow:idea`), then go on.
 
 ## How to work
 
@@ -34,7 +34,7 @@ Turn an idea into a brief the technical plan can build on. This stage decides th
 7. Walk the chosen approach in short pieces: what it does, what it will not do, and how someone can tell it worked. Correct the draft where a piece may not be what the user wants. A new constraint changes the approach before the file is written.
 8. Settle **Delivery**. With several features, ask once and offer "same for all".
 
-Everything the user asked for is in scope. Move an item to **Out of scope**, or into a later feature, only when they say so or picks that option in a question. A later feature gets its own stub. Name no decider, owner, team, Security or Compliance step that the user did not name themselves.
+Everything the user asked for is in scope. Move an item to **Out of scope**, or into a later feature, only when they say so or pick that option in a question. A later feature is parked as its own idea. Name no decider, owner, team, Security or Compliance step that the user did not name themselves.
 
 Under `epic-flow:run`, the run's develop step plays steps 1 to 3 for each feature, and its question session plays steps 4 to 8 for all features at once.
 
@@ -67,7 +67,7 @@ status: accepted
 ---
 ```
 
-- **Idea** and **Where it came up.** Kept from the stub, or written from the input.
+- **Idea** and **Where it came up.** Kept from the parked idea, or written from the input.
 - **Problem.** Who is blocked, and why this is worth doing.
 - **Decisions.** Each choice, why, and its trade-off. One line for each approach the user rejected.
 - **Approach.** The chosen design in prose. Conceptual. No file paths, no patches, no task list.

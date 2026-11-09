@@ -20,7 +20,7 @@ Turn accepted briefs into a plan of this change in this codebase. Stay high leve
 
 ## How to work
 
-1. Read every brief this plan builds. Each must be `accepted`. If one is `stub` or `draft`, stop and name `epic-flow:brainstorm`. Several briefs make one combined plan with its own slug: list them in `briefs:` and set `plan: <slug>` in each source brief.
+1. Read every brief this plan builds. Each must be `accepted`. If one is `idea` or `draft`, stop and name `epic-flow:brainstorm`. Several briefs make one combined plan with its own slug: list them in `briefs:` and set `plan: <slug>` in each source brief.
 2. Read `questions.md` for each brief. Every `answered` and `assumed` entry is decided. An `open` entry that this plan depends on stops the plan.
 3. Plan against the tip of the Delivery base branch. Run `git fetch` when there is a remote, then read the code at `<base>`, not whatever branch the main checkout has open. Record the sha you read in **Builds**.
 4. Find where the change lives. Open the modules it touches, the patterns around them, and the docs that define current behaviour. Name only paths and types you opened.

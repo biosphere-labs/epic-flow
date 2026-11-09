@@ -39,7 +39,9 @@ Write `build shape: <sequential|parallel>, <n> tasks, <n> groups, <reason when i
 
 ## Groups
 
-- Run `scripts/slice.mjs` from `contract-first-parallel-build` with each `open` task's entry points and the frozen contract declarations, where the language allows. Elsewhere, group by calls and the data they pass, and say which edges you added by hand.
+- The unit of grouping is the dependence slice: an entry point, everything it calls, and the data shapes that flow along those calls. Files are storage: two functions in one file can be unrelated, and a function and its caller usually live in different files.
+- Run `<plugin>/scripts/slice.mjs` with each `open` task's entry points and every frozen contract declaration (`--frozen`), where the language allows (TypeScript; run it with no arguments for its usage). A frozen node is a boundary: the walk stops there and it links no tasks. Add edges it cannot see with `--edge` (functions chosen at runtime, event emitters, dependency injection, dynamic imports, HTTP, files, the database). Elsewhere, group by calls and the data they pass. Say which edges you added by hand.
+- A large group's `sharedNodes` are the candidates to freeze next; freezing is what buys parallelism. On a fresh skeleton, stubs have no bodies, so slices under-group: group by aggregate instead, one group per aggregate with the use cases that change it.
 - Build the dependence graph from the slices, `builds_against` and `depends_on`. A group that needs another group's result (an output no frozen contract covers) runs after it. When you cannot tell whether two groups depend on each other, write "dependence unknown".
 - Tasks whose slices share an unfrozen node are one group with one writer. Never group by file, by task id order, or in fixed pairs.
 - Write `notes/build-groups.md`: the shape, each group's name, its task ids, the contracts it imports, and the groups it runs after (or "dependence unknown"). For a sequential build, also the task order.
@@ -58,12 +60,10 @@ Write `build shape: <sequential|parallel>, <n> tasks, <n> groups, <reason when i
 
 ## Parallel
 
-Load `contract-first-parallel-build` with the Skill tool and follow its phases 2 to 4. This section says what Epic Flow adds to them.
-
 ### Infill
 
 - A group starts as soon as every contract it imports has merged and every group it depends on has merged. Nothing waits for a wave, and nothing starts before its dependencies.
-- One agent per group, in `<repo>/.worktrees/<slug>-<group>/` on branch `<branch>-<group>`, cut from the feature branch tip.
+- One agent per group, in `<repo>/.worktrees/<slug>-<group>/` on branch `<branch>-<group>`, cut from the feature branch tip. Never start a second builder on a group that has one. Within a group, the writer works from the entry point down, so each caller and its callee are written in the same context.
 - The brief carries everything inline: the tasks' text, their criteria, the contract files to import, the paths it may edit, and the checks.
 - The writer writes `task <id> started` and `task <id> closed` lines to `status.md` in the main checkout, or returns their times for you to write.
 - Writers change function bodies and private helpers. A writer that needs a contract change stops and reports `contract change: <declaration>: <why>`. Set that task `blocked` with the line, run a small contract wave for that declaration only, re-run the slices, and restart only the groups that reach it.
@@ -75,7 +75,9 @@ Load `contract-first-parallel-build` with the Skill tool and follow its phases 2
 
 - Line up finished groups. Test each on top of the ones ahead of it, each in its own scratch worktree, all at once. Merge onto the feature branch in order as each passes. Drop a failure, send its exact diagnostic to its group, and retest the ones behind it.
 - Checks at the train: the merge, the compile or type check, the contract tests, the tests held back from the groups, the full suite.
+- A failure goes back to the group that owns it, with the exact diagnostic. No agent reconciles two diffs at the join.
 - A textual conflict inside one function means two groups owned the same node. Regroup; do not patch it at the join.
+- After the train, deduplicate convenience helpers that groups wrote separately, checked by the suite staying green before and after.
 
 ## The contract holds
 

@@ -6,8 +6,8 @@ Every Epic Flow skill and the run workflow follow this file. It is the contract 
 
 | # | Stage | Skill | Needs | Writes |
 | --- | --- | --- | --- | --- |
-| 1 | Stub | `epic-flow:stub` | an idea | `brief.md`, status `stub` |
-| 2 | Brainstorm | `epic-flow:brainstorm` | a stub, a draft, a plan file, a list, or an idea | `brief.md`, status `accepted` |
+| 1 | Idea | `epic-flow:idea` | an idea | `brief.md`, status `idea` |
+| 2 | Brainstorm | `epic-flow:brainstorm` | a parked idea, a draft, a plan file, a list, or an idea | `brief.md`, status `accepted` |
 | 3 | Technical plan | `epic-flow:technical-plan` | one or more accepted briefs | `technical-plan.md`, status `ready` |
 | 4 | Decompose | `epic-flow:decompose` | a `ready` technical plan | `tasks/NNN.md`, the contract commit or `contract: none` |
 | 5 | Gaps | `epic-flow:gaps` | the tasks, and the contract commit if any | `gaps.md`, edits to the tasks |
@@ -16,9 +16,7 @@ Every Epic Flow skill and the run workflow follow this file. It is the contract 
 
 `epic-flow:run` runs any range of these stages on one feature or many. `epic-flow:status` reports where each feature is.
 
-The Stub stage parks an idea. It has nothing to do with the interface stubs (placeholder code) that decompose writes for a parallel build.
-
-`contract-first-parallel-build` is bundled with this plugin at `skills/contract-first-parallel-build/` in the plugin root. Load it with the Skill tool as `epic-flow:contract-first-parallel-build`, or read its `SKILL.md` there; its `scripts/slice.mjs` is beside it.
+`<plugin>` is the plugin root, two levels up from any stage skill's base directory.
 
 ## Records
 
@@ -45,7 +43,7 @@ A technical plan that combines several briefs gets its own slug. Its `briefs:` l
 ```yaml
 ---
 name: <slug>
-status: stub | draft | accepted
+status: idea | draft | accepted
 plan: <slug of the combined plan, only when another plan took this brief>
 ---
 ```
@@ -165,7 +163,7 @@ Below the front matter, one line per event, newest last:
 
 Build also writes `task <id> started` and `task <id> closed` lines. Build shape estimates come from these lines and the stage lines.
 
-Take the time from `date -u +%FT%TZ`. Each stage writes a line when it starts and when it ends, and sets the front matter both times: on start, `stage` to itself and `state` to `running`; on end, `state` to `done`, `waiting` or `stopped`. `waiting` names the question ids. `stopped` names what failed. `done` means the stage named in `stage` finished; a stub that is `done` is parked. A feature `waiting` at verify is not done.
+Take the time from `date -u +%FT%TZ`. Each stage writes a line when it starts and when it ends, and sets the front matter both times: on start, `stage` to itself and `state` to `running`; on end, `state` to `done`, `waiting` or `stopped`. `waiting` names the question ids. `stopped` names what failed. `done` means the stage named in `stage` finished; an idea that is `done` is parked. A feature `waiting` at verify is not done.
 
 ## Running alone and under the run
 

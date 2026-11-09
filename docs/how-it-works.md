@@ -6,7 +6,7 @@
 
 | # | Stage | Command | What it produces |
 | --- | --- | --- | --- |
-| 1 | Stub | `/epic-flow:stub` | Parks an idea in seconds, in your own words, and asks nothing |
+| 1 | Idea | `/epic-flow:idea` | Parks an idea in seconds, in your own words, and asks nothing |
 | 2 | Brainstorm | `/epic-flow:brainstorm` | An accepted brief: problem, decisions, approach, success, delivery |
 | 3 | Technical plan | `/epic-flow:technical-plan` | A plan grounded in your codebase, with numbered acceptance criteria |
 | 4 | Decompose | `/epic-flow:decompose` | Self-contained tasks, level by level: modules, then interfaces, then units |
@@ -113,4 +113,4 @@ The run resumes from `status.md`. Answer any open questions, run `/epic-flow:run
 
 ## Ideas it builds on
 
-None of the parts are new: design by contract, contract-first interfaces, program slicing, merge trains, topological scheduling and falsification testing. What Epic Flow adds is running them together, end to end, unattended, and checking every step from the files. The contract-first build method ships with the plugin as the `contract-first-parallel-build` skill.
+None of the parts are new: design by contract, contract-first interfaces, program slicing, merge trains, topological scheduling and falsification testing. What Epic Flow adds is running them together, end to end, unattended, and checking every step from the files.

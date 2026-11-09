@@ -48,7 +48,7 @@ Keep them as `notes/gaps-review-a.md` and `notes/gaps-review-b.md`. Reconcile th
 - Add an acceptance criterion the technical plan already implies, numbered after the last one.
 - Correct a path you verified by opening it.
 - Add `builds_against` or `depends_on`.
-- For a missing seam with a contract commit, run a small contract wave, as `contract-first-parallel-build` describes under "When a contract turns out wrong". Commit it on the feature branch and update `contract:` in the technical plan. With `contract: none`, write the seam into its producing task and quote it in each user.
+- For a missing seam with a contract commit, run a small contract wave: add the declaration with its doc comment and contract test, pass decompose's gate for it, and commit it on the feature branch and update `contract:` in the technical plan. With `contract: none`, write the seam into its producing task and quote it in each user.
 
 It may not change a decision in the brief or the technical plan, or the scope. It does no build work: no merges of other branches, no product code, no environment setup.
 

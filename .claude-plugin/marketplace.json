@@ -5,7 +5,7 @@
     {
       "name": "epic-flow",
       "source": "./",
-      "description": "Take an idea from a stub to verified, tested code, unattended after one question session, with an independent check after every stage."
+      "description": "Take an idea to verified, tested code, unattended after one question session, with an independent check after every stage."
     }
   ]
 }

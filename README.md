@@ -21,7 +21,7 @@ Building with coding agents, I kept having to stay through every stage: the plan
 
 ```mermaid
 flowchart LR
-    S[Stub] --> B[Brainstorm]
+    S[Idea] --> B[Brainstorm]
     B --> P[Technical plan]
     P --> D[Decompose]
     D --> G[Gaps]
@@ -46,7 +46,7 @@ You take part in the shaded stages. Everything after them runs unattended, and a
 | Command | What it does |
 | --- | --- |
 | `/epic-flow:run` | Runs any range of stages over one feature or many |
-| `/epic-flow:stub` | Parks an idea in seconds |
+| `/epic-flow:idea` | Parks an idea in seconds |
 | `/epic-flow:status` | Shows where every feature is and what to run next |
 | `/epic-flow:<stage>` | Runs one stage: `brainstorm`, `technical-plan`, `decompose`, `gaps`, `build`, `verify` |
 

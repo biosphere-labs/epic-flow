@@ -2,7 +2,7 @@
   "name": "epic-flow",
   "displayName": "Epic Flow",
   "version": "0.1.0",
-  "description": "Take an idea from a stub to verified, tested code. Answer the questions once, then it plans, decomposes, reviews, builds (sequentially or in parallel, your choice, with time and risk estimates) and verifies unattended, with an independent check after every stage.",
+  "description": "Take an idea to verified, tested code. Answer the questions once, then it plans, decomposes, reviews, builds (sequentially or in parallel, your choice, with time and risk estimates) and verifies unattended, with an independent check after every stage.",
   "author": { "name": "Biosphere Labs" },
   "homepage": "https://github.com/biosphere-labs/epic-flow",
   "repository": "https://github.com/biosphere-labs/epic-flow",

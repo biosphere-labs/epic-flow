@@ -7,7 +7,7 @@
  * Graph: calls (the language service's call hierarchy), functions referred to without a call (a
  * default starter, a callback passed by name), module-level values read, and the types named in
  * signatures and in those types' members. Tasks whose slices share a node the contract wave has not
- * frozen land in one group. Used by the contract-first-parallel-build skill, phases 0 and 2.
+ * frozen land in one group. Used by Epic Flow's decompose (to check the seam list) and build (to compute groups).
  *
  * Usage:
  *   node slice.mjs --project <dir holding tsconfig.json and node_modules/typescript>

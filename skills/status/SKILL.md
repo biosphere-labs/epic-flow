@@ -18,7 +18,7 @@ Report where each feature is and what runs next. This skill reads files only. It
 
 | # | Stage | Command | Writes |
 | --- | --- | --- | --- |
-| 1 | Stub | `/epic-flow:stub` | `brief.md`, `stub` |
+| 1 | Idea | `/epic-flow:idea` | `brief.md`, `idea` |
 | 2 | Brainstorm | `/epic-flow:brainstorm` | `brief.md`, `accepted` |
 | 3 | Technical plan | `/epic-flow:technical-plan` | `technical-plan.md`, `ready` |
 | 4 | Decompose | `/epic-flow:decompose` | `tasks/NNN.md`, the contract commit or `contract: none` |
@@ -33,7 +33,7 @@ Report where each feature is and what runs next. This skill reads files only. It
 1. Find `<repo>` with `git rev-parse --show-toplevel` in the main checkout. Records are in `<repo>/.epic-flow/<slug>/`.
 2. For each feature, read `status.md` first. Take the stage and state from its front matter and the time from its last event line.
 3. When `status.md` is missing, infer the stage from the records, and mark the row **inferred**:
-   - `brief.md` is `stub` or `draft`: brainstorm is next.
+   - `brief.md` is `idea` or `draft`: brainstorm is next.
    - `brief.md` is `accepted` and no plan exists: technical plan is next.
    - `brief.md` has `plan:`: report it under that plan's slug.
    - The plan is `ready` and there are no tasks: decompose is next.

@@ -42,13 +42,16 @@ Name each module or package the plan's components become, its public surface in 
 
 ### Parallel: as code, the contract commit
 
-Load the `contract-first-parallel-build` skill and follow its Phase 1 in the worktree.
+Several writers will build at once, and a model fills whatever it cannot see by guessing. Two writers working from a prose description of the same seam guess differently (a field name, argument order, `null` against an empty list), and the merge pays for every difference. So every seam exists as compiling code before any writer starts. The interfaces are written down here, not designed here: they come from the plan, `questions.md`, a reference product the brief names, or, when the plan gives only requirements, domain-driven design as `ddd-design.md` (beside this file) describes.
 
-- Write every seam as code that compiles: types, records, wire schemas, signatures, the error and null conventions, and stub bodies that throw the project's internal-gap marker.
+- **Find every seam.** Where the language allows, run `<plugin>/scripts/slice.mjs` (TypeScript; run it with no arguments for its usage) over the existing code with each criterion's entry points as one task. Every node in its `sharedNodes` is reached by more than one task and is a seam. Add the new seams the plan names that no code has yet (a new route, record or callback), and every seam that crosses an untyped boundary. Edges the analysis cannot see (functions chosen at runtime, event emitters, dependency injection, dynamic imports, HTTP, files, the database) are added by hand; say which in `notes/contract-gate.md`. Other stacks: the IDE call hierarchy, Joern, CodeQL or WALA.
+- **Untyped boundaries.** For a seam across HTTP, a JSON file, a database row, CLI output or untyped JavaScript, both sides import one shared schema or type (JSDoc with `checkJs` for plain JS), and each side gets a contract test reading the same fixture, produced by running the real producer. A hand-written mock is not that fixture.
+- What a contract needs, with an example and a checklist: `contracts.md`, beside this file.
+
+- Write every seam as code that compiles: types, records, wire schemas, signatures, the error and null conventions, and stub bodies that throw the project's internal-gap marker (for example `FIXME[internal]`). This wave also decides each declaration's path; that is the only place paths are chosen.
 - Give every declaration a doc comment, in the project's own doc style, that a builder can fill the body from without the task file: what it does, its preconditions and postconditions, what it throws or returns on failure, and the acceptance criteria it serves. Each rule in it comes from the brief, the plan or `questions.md`; nothing in it is new.
 - Write contract tests against the stubs. When `tests` is `first`, also write each acceptance test now, through its entry point.
-- Check the seam list with the skill's `scripts/slice.mjs` where the language allows it. Add edges it cannot see by hand, and say which in `notes/contract-gate.md`.
-- Gate: the type check passes, and every contract test fails on the stub with an assertion or the stub's throw, never a compile error. Write the commands, their exit codes and the failing test names to `notes/contract-gate.md`, and under **Contract files** every path the contract wave wrote, each marked `whole` or `declarations` as the conventions say.
+- Gate: the type check passes, every contract test fails on the stub with an assertion or the stub's throw (never a compile error), and when the contracts came from domain-driven design, rules R1 to R9 in `ddd-design.md` hold. Write the commands, their exit codes and the failing test names to `notes/contract-gate.md`, and under **Contract files** every path the contract wave wrote, each marked `whole` or `declarations` as the conventions say.
 - Commit the contract wave on the branch. Write its sha to `contract:` in `technical-plan.md`.
 
 Write a task for work that is fully specified by these interfaces, such as a migration from a data shape or wiring an entry point to a stub.

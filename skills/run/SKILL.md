@@ -5,7 +5,7 @@ description: >
   question session with the user up front, then technical plan, decompose,
   gaps, build and verify unattended, independent features in parallel and dependent ones in order, each stage
   checked from the files. Use when the user says "do Epic Flow on these",
-  "run the whole flow", "take these stubs through to build", "do these five
+  "run the whole flow", "take these ideas through to build", "do these five
   but stop at decompose", "carry on with the epics", "resume the run", or
   runs /epic-flow:run. Starts a workflow.
 ---
@@ -21,8 +21,8 @@ Take features through a range of stages without the user starting each one. They
 What, in any mix:
 
 - Slugs of features in `.epic-flow/`.
-- Stub or plan files, or a folder of them.
-- A pasted list of ideas. Each item becomes a stub first, as `epic-flow:stub` writes it.
+- Parked ideas, plan files, or a folder of them.
+- A pasted list of ideas. Each item is parked first, as `epic-flow:idea` writes it.
 - Nothing: every feature in `.epic-flow/` whose technical plan is not `closed`.
 
 How far, in the user's words: "through decompose", "from gaps", "only verify", "stop before build". No range means each feature from its next stage through verify. One range applies to every feature unless they name one per feature.
@@ -33,7 +33,7 @@ Take each feature's next stage from `status.md`. When `status.md` is missing, ta
 
 | Records | Next stage |
 | --- | --- |
-| brief `stub` or `draft`, or a file or idea with no brief | brainstorm |
+| brief `idea` or `draft`, or a file or idea with no brief | brainstorm |
 | brief `accepted`, no `technical-plan.md` | technical-plan |
 | plan `ready`, no `contract:` | decompose |
 | `contract:` set (a sha or `none`), no `gaps.md`, or verdict `blocked` | gaps |
@@ -57,7 +57,7 @@ Workflow({ script: "<full text of <plugin>/scripts/flow.js>", args: {
   repo: "<repo>",
   pluginRoot: "<plugin>",
   unattended: <true only when the user said not to ask them>,
-  features: [{ slug: "<slug>", source: "<path of the stub, plan or list file>" }, ...]
+  features: [{ slug: "<slug>", source: "<path of the parked brief, plan or list file>" }, ...]
 }})
 ```
 
