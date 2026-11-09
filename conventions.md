@@ -88,6 +88,13 @@ depends_on: [<task id>, ...]
 
 The technical plan numbers them `AC-1`, `AC-2`, and so on. Decompose and gaps may add more and keep numbering. Each criterion says what is observable when it holds, and which test will prove it: the kind of test and the real entry point it goes through (the route, the subscription, the command, the scheduled job). A test that hands input straight to an inner function does not prove a criterion about the entry point.
 
+Each criterion carries **examples**: concrete cases with real values, in the form given, when, then (the input or state, the action, the exact expected result). At least one shows the usual case and at least one an edge or failure case the criterion implies (empty, missing, too large, not allowed, already done). Examples are where ambiguity shows up: a value nobody can fill in is a question for the answer order. They flow down unchanged:
+
+- the technical plan writes them under each criterion, numbered `AC-2.1`, `AC-2.2`
+- decompose copies the ones a task serves into it, and its unit tests are those examples, plus any the task's own logic needs
+- the acceptance test for a criterion runs its examples through the entry point
+- gaps checks every example has a test; verify runs them all
+
 Every task lists the criteria it serves in `criteria:`. Verify judges every criterion.
 
 ## Questions and the answer order

@@ -21,7 +21,7 @@ Read the brief, the technical plan, every task, `questions.md`, the contract com
 
 ## Checks
 
-- **Coverage.** Every acceptance criterion maps to one or more task ids.
+- **Coverage.** Every acceptance criterion maps to one or more task ids, and every example under it (`AC-n.m`) is a unit test in a task's **Check**. A criterion with no edge or failure example gets one, from the answer order.
 - **Scope.** Every task maps to a section of the technical plan.
 - **Paths.** Every cited path exists, or is a new path the contract commit, a producing task, or the layout around it supports.
 - **Contracts.** With a contract commit: every seam two tasks share is frozen in it, a task builds against the declaration, never a prose description of another task's code, and every declaration has a doc comment that states its behaviour and agrees with the task that fills it. With `contract: none`: every seam two tasks share is written out as a signature in exactly one producing task, quoted identically in every task that uses it, and each user `depends_on` the producer.

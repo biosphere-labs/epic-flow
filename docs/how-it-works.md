@@ -24,6 +24,18 @@ Run one stage on its own, or a range of stages over many features with `/epic-fl
 2. **Question session.** You get every question neither agent could settle, across all features, in one sitting. You also choose delivery (branches, push, PR, time budget) and the build shape.
 3. **Unattended.** Technical plan, decompose, gaps, build and verify run without you. Independent features run at the same time. A feature that needs another's result waits for it.
 
+## Criteria, examples, tests
+
+Every acceptance criterion in the technical plan carries examples: concrete cases with real values, written as given, when, then. At least one shows the usual case and at least one an edge or failure case. For example:
+
+```
+AC-3  A user can rename a project; the new name shows everywhere it is listed.
+  AC-3.1  given project "Alpha", when renamed to "Beta", then GET /projects lists "Beta" and not "Alpha"
+  AC-3.2  given project "Alpha", when renamed to "", then the API returns 400 "name is required" and the name stays "Alpha"
+```
+
+Examples are where ambiguity shows up: a value nobody can fill in becomes a question before any code is written. They flow down unchanged. Each task copies the examples it makes true, and its unit tests are those examples. The acceptance test for a criterion runs its examples through the real entry point. Gaps checks every example has a test, and verify runs them all.
+
 ## Questions are answered in a fixed order
 
 Before a question reaches you, the stage tries each of these in order and takes the first that answers it:
@@ -61,6 +73,16 @@ flowchart TB
 
 You choose once, up front. If you chose parallel and the real task graph turns out to be one long chain, the build runs sequentially and records why.
 
+## Nothing waits that doesn't have to
+
+The run is event-driven. A piece of work starts the moment what it needs exists, not when a whole step has finished.
+
+- **Features.** A feature starts the moment the features it depends on are done, even while unrelated features are still running.
+- **Sequential build.** There's still one writer of product code, but nothing around it waits. While one task builds, a helper prepares the next task's brief, so each builder starts warm. As each task is committed, its tests run in the background, and a failure stops the tasks that depend on it straight away. The acceptance tests are written on their own branch while the code is being built.
+- **Parallel build.** Each group starts the moment the groups it depends on have merged. Finished groups merge one at a time, in the order they finish.
+
+The workflow script enforces all of this in code, not in a prompt.
+
 ## Checks along the way
 
 - **An independent checker after every stage.** It tests the stage's exit list against the files and re-runs the commands the records cite as evidence. One repair round follows a failed check. A second failure stops that feature, with the reasons.
@@ -77,7 +99,8 @@ Each task carries everything inline:
 - the interfaces it uses, with signatures quoted
 - a pattern to copy from your own repository
 - the paths it may edit
-- a check, with a falsification probe
+- the examples it makes true, and a unit test for each
+- a falsification probe
 
 There's no "as in the plan". A builder never has to invent a name, a data shape or an error case.
 

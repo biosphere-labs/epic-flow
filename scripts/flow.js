@@ -4,7 +4,7 @@ export const meta = {
   whenToUse: 'Started by /epic-flow:run, which passes the repo, the plugin root and each feature with its range of stages.',
   phases: [
     { title: 'Develop', detail: 'a questioner and an answerer draft each brief' },
-    { title: 'Flow', detail: 'technical plan, decompose, gaps, build and verify for each feature, each stage checked' },
+    { title: 'Flow', detail: 'technical plan, decompose, gaps, build and verify for each feature, each stage checked; work starts the moment its inputs exist' },
   ],
 }
 
@@ -160,9 +160,196 @@ const checkPrompt = (f, stage) => [
   'Return pass true only when every item holds. List each item that does not, with the evidence.',
 ].join('\n')
 
+// ---------- build, orchestrated by events ----------
+// The build stage runs as code: a plan agent returns the shape, the task order or groups; then each
+// piece starts the moment what it needs is ready. Sequential keeps one writer, and removes waiting
+// around it: the next task's brief is prepared while the current one builds, each task's tests run in
+// the background as soon as it is committed, and the acceptance tests are written alongside the build.
+// Parallel starts each group the moment the groups it depends on have merged, and merges finished
+// groups in the order they finish.
+
+const BUILD_PLAN = {
+  type: 'object',
+  properties: {
+    outcome: { type: 'string', enum: ['ready', 'waiting', 'error'] },
+    summary: { type: 'string' },
+    questions: { type: 'array', items: { type: 'string' } },
+    shape: { type: 'string', enum: ['sequential', 'parallel'] },
+    tasks: {
+      type: 'array',
+      description: 'sequential: the open tasks in build order, each with the task ids it depends on',
+      items: { type: 'object', properties: { id: { type: 'string' }, dependsOn: { type: 'array', items: { type: 'string' } } }, required: ['id'] },
+    },
+    groups: {
+      type: 'array',
+      description: 'parallel: each group, its task ids, and the groups that must merge before it starts',
+      items: { type: 'object', properties: { name: { type: 'string' }, tasks: { type: 'array', items: { type: 'string' } }, after: { type: 'array', items: { type: 'string' } } }, required: ['name', 'tasks'] },
+    },
+  },
+  required: ['outcome', 'summary'],
+}
+const PIECE = {
+  type: 'object',
+  properties: {
+    outcome: { type: 'string', enum: ['closed', 'open', 'blocked', 'budget'] },
+    summary: { type: 'string' },
+  },
+  required: ['outcome', 'summary'],
+}
+const TESTED = {
+  type: 'object',
+  properties: { pass: { type: 'boolean' }, summary: { type: 'string' } },
+  required: ['pass', 'summary'],
+}
+const MERGED = {
+  type: 'object',
+  properties: { merged: { type: 'boolean' }, diagnostic: { type: 'string' } },
+  required: ['merged'],
+}
+
+const buildContext = (f, part) => [
+  runContext(f.slug),
+  `You are one part of the Epic Flow build for this feature, driven by the run's workflow. Read ${skillFile('build')} for the rules; do only your part: ${part}`,
+].join('\n')
+
+async function buildStage(f, note) {
+  const tag = `${f.slug} build`
+  const plan = await agent([
+    buildContext(f, 'the plan.'),
+    'Do "Before you start", "Choose the shape" and "Groups". Write `build started`, the `build shape:` line and notes/build-groups.md. Build nothing.',
+    note || '',
+    'Return outcome ready with the shape and either the open tasks in build order (sequential) or the groups (parallel); waiting with the question ids; or error.',
+  ].filter(Boolean).join('\n'), { ...AGENT, label: `${tag} plan`, phase: 'Flow', schema: BUILD_PLAN })
+  if (!plan) return { outcome: 'error', summary: 'the build plan agent did not return' }
+  if (plan.outcome !== 'ready') return { outcome: plan.outcome === 'waiting' ? 'waiting' : 'error', summary: plan.summary, questions: plan.questions || [] }
+
+  // Acceptance tests are written alongside the build, on their own branch; verify merges them.
+  const acceptance = agent(buildContext(f, 'the acceptance tests.'
+    + ' Follow "Acceptance tests during the build". Touch no product code and nothing outside your own worktree.'),
+    { ...AGENT, label: `${tag} acceptance tests`, phase: 'Flow', effort: 'low', schema: TESTED })
+
+  const problems = plan.shape === 'parallel' ? await buildParallel(f, plan.groups || []) : await buildSequential(f, plan.tasks || [])
+  await acceptance
+
+  const finish = await agent([
+    buildContext(f, 'the finish.'),
+    'Every builder and test run has returned. Do "After the last task" (sequential) or the end of "Merge train" (parallel), then "Task status" and "When the build ends". Write `build finished`.',
+    problems.length ? `Events during the build:\n- ${problems.join('\n- ')}` : '',
+    'Return the stage outcome as the conventions define it.',
+  ].filter(Boolean).join('\n'), { ...AGENT, label: `${tag} finish`, phase: 'Flow', schema: STAGE_RESULT })
+  return finish || { outcome: 'error', summary: 'the build finish agent did not return' }
+}
+
+async function buildSequential(f, tasks) {
+  const tag = `${f.slug} build`
+  const problems = []
+  const failed = new Set()
+  const tests = []
+  let budgetSpent = false
+  const prepare = t => agent(buildContext(f, `prepare the brief for task ${t.id}.`
+    + ' Follow "Prepare ahead". Read only; write only that brief file.'),
+    { ...AGENT, label: `${tag} prepare ${t.id}`, phase: 'Flow', effort: 'low', schema: TESTED })
+  const blockedBy = t => (t.dependsOn || []).filter(d => failed.has(d))
+
+  let next = tasks.length ? prepare(tasks[0]) : null
+  for (let i = 0; i < tasks.length; i++) {
+    const t = tasks[i]
+    await next
+    next = i + 1 < tasks.length ? prepare(tasks[i + 1]) : null // starts now, while task i builds
+    const stop = blockedBy(t)
+    if (budgetSpent || stop.length) {
+      failed.add(t.id)
+      problems.push(budgetSpent ? `task ${t.id} not started: budget spent` : `task ${t.id} skipped: it depends on ${stop.join(', ')}, which failed`)
+      continue
+    }
+    const r = await agent(buildContext(f, `build task ${t.id}, and only that task.`
+      + ' Follow "Sequential" for one task: use its prepared brief when there is one, write it, run its check and falsification probe, commit. Return closed, open (check failed), blocked (needs a seam changed), or budget (the time budget is spent; change nothing).'),
+      { ...AGENT, label: `${tag} task ${t.id}`, phase: 'Flow', schema: PIECE })
+    if (!r || r.outcome !== 'closed') {
+      if (r && r.outcome === 'budget') budgetSpent = true
+      failed.add(t.id)
+      problems.push(`task ${t.id} ${r ? r.outcome : 'agent did not return'}: ${r ? r.summary : ''}`)
+      continue
+    }
+    // Event: task committed. Its tests run in the background; a failure stops what depends on it.
+    tests.push(agent(buildContext(f, `test task ${t.id} as it landed.`
+      + ' Follow "Test as each task lands": in a scratch worktree at the current feature branch tip, run the tests for the code task ' + t.id + ' changed. On a failure, set that task open with the diagnostic under **Check**. Change no code.'),
+      { ...AGENT, label: `${tag} test ${t.id}`, phase: 'Flow', effort: 'low', schema: TESTED })
+      .then(x => { if (x && !x.pass) { failed.add(t.id); problems.push(`task ${t.id} failed its tests after landing: ${x.summary}`) } }))
+  }
+  await Promise.all(tests)
+  return problems
+}
+
+async function buildParallel(f, groups) {
+  const tag = `${f.slug} build`
+  const problems = []
+  const merged = new Set()
+  const stopped = new Set()
+  const names = new Set(groups.map(g => g.name))
+  const pending = groups.slice()
+  const running = new Map()
+  let train = Promise.resolve()
+
+  const runGroup = (g, diagnostic) => agent(buildContext(f, `build group ${g.name} (tasks ${g.tasks.join(', ')}).`
+    + ' Follow "Infill" for this group only, in its own worktree. Return closed when its tasks pass their checks there, open when one fails, blocked when it needs a contract change (say which declaration).'
+    + (diagnostic ? `\nThe merge train sent it back with this diagnostic:\n${diagnostic}` : '')),
+    { ...AGENT, label: `${tag} group ${g.name}${diagnostic ? ' retry' : ''}`, phase: 'Flow', schema: PIECE })
+  const merge = g => agent(buildContext(f, `merge group ${g.name}.`
+    + ' Follow "Merge train" for this group: test it on top of the feature branch tip, and merge it when every train check passes. Return merged false with the exact diagnostic otherwise.'),
+    { ...AGENT, label: `${tag} merge ${g.name}`, phase: 'Flow', schema: MERGED })
+
+  // One group's life: build, then join the train (merges happen one at a time, in finishing order).
+  const life = async g => {
+    let r = await runGroup(g)
+    if (r && r.outcome === 'blocked') {
+      await agent(buildContext(f, `run a small contract wave for group ${g.name}: ${r.summary}`), { ...AGENT, label: `${tag} contract wave ${g.name}`, phase: 'Flow', schema: PIECE })
+      r = await runGroup(g, `the contract wave for "${r.summary}" has merged`)
+    }
+    if (!r || r.outcome !== 'closed') return { ok: false, why: `group ${g.name} ${r ? r.outcome : 'agent did not return'}: ${r ? r.summary : ''}` }
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const turn = train.then(() => merge(g))
+      train = turn.catch(() => null)
+      const m = await turn
+      if (m && m.merged) return { ok: true }
+      if (attempt === 0) {
+        const again = await runGroup(g, m ? m.diagnostic : 'the merge agent did not return')
+        if (!again || again.outcome !== 'closed') return { ok: false, why: `group ${g.name} could not be fixed after the train sent it back` }
+      } else return { ok: false, why: `group ${g.name} failed the train twice: ${m ? m.diagnostic : ''}` }
+    }
+  }
+
+  while (pending.length || running.size) {
+    for (const g of pending.slice()) {
+      const after = g.after || []
+      const unknown = after.filter(n => !names.has(n) || n === g.name)
+      const dead = after.filter(n => stopped.has(n))
+      if (unknown.length || dead.length) {
+        stopped.add(g.name)
+        problems.push(unknown.length ? `group ${g.name} names unknown groups ${unknown.join(', ')}` : `group ${g.name} not started: ${dead.join(', ')} did not merge`)
+      } else if (after.every(n => merged.has(n))) {
+        running.set(g.name, life(g).then(res => ({ name: g.name, res })))
+      } else continue
+      pending.splice(pending.indexOf(g), 1)
+    }
+    if (!running.size) {
+      for (const g of pending) { stopped.add(g.name); problems.push(`group ${g.name} not started: its after list forms a cycle`) }
+      break
+    }
+    // Event: a group finished its life (merged or stopped). Start whatever that unblocks.
+    const { name, res } = await Promise.race(running.values())
+    running.delete(name)
+    if (res && res.ok) merged.add(name)
+    else { stopped.add(name); problems.push(res ? res.why : `group ${name} failed`) }
+  }
+  return problems
+}
+
 async function runStage(f, stage, note) {
   const tag = `${f.slug} ${stage}`
-  let r = await agent(stagePrompt(f, stage, note), { ...AGENT, label: tag, phase: 'Flow', schema: STAGE_RESULT })
+  let r = stage === 'build'
+    ? await buildStage(f, note)
+    : await agent(stagePrompt(f, stage, note), { ...AGENT, label: tag, phase: 'Flow', schema: STAGE_RESULT })
   if (!r) return { outcome: 'error', summary: 'the stage agent did not return' }
   if (r.outcome !== 'done') return r
 
@@ -217,31 +404,32 @@ if (A.mode === 'develop') {
 }
 
 phase('Flow')
-// A feature with `after: [slugs]` needs those features' results, so it starts only once they are done.
-// Features without `after` are independent and run together. Unknown or circular `after` is an error, never a guess.
+// Event-driven: a feature with `after: [slugs]` starts the moment those features are done, not when a
+// whole round of features has finished. Features without `after` start at once.
+// Unknown or circular `after` is an error, never a guess.
 const slugs = new Set(A.features.map(f => f.slug))
 const outcome = {}
 const pending = A.features.slice()
-while (pending.length) {
-  const ready = []
+const running = new Map()
+while (pending.length || running.size) {
   for (const f of pending.slice()) {
     const after = f.after || []
     const missing = after.filter(s => !slugs.has(s) || s === f.slug)
     const stopped = after.filter(s => outcome[s] && outcome[s].outcome !== 'done')
     if (missing.length) outcome[f.slug] = { slug: f.slug, outcome: 'error', stoppedAt: f.from, summary: `after names ${missing.join(', ')}, which is not another feature in this run`, trail: [] }
     else if (stopped.length) outcome[f.slug] = { slug: f.slug, outcome: 'blocked', stoppedAt: f.from, summary: `waits for ${stopped.join(', ')}, which did not finish`, trail: [] }
-    else if (after.every(s => outcome[s])) { ready.push(f); continue }
-    else continue
+    else if (after.every(s => outcome[s])) {
+      running.set(f.slug, flow(f).catch(() => null).then(r => ({ slug: f.slug, r })))
+    } else continue
     pending.splice(pending.indexOf(f), 1)
   }
-  if (ready.length === 0) {
+  if (!running.size) {
     for (const f of pending) outcome[f.slug] = { slug: f.slug, outcome: 'error', stoppedAt: f.from, summary: 'after forms a cycle', trail: [] }
     break
   }
-  const rs = await parallel(ready.map(f => () => flow(f)))
-  ready.forEach((f, i) => {
-    outcome[f.slug] = rs[i] || { slug: f.slug, outcome: 'error', summary: 'the feature chain failed' }
-    pending.splice(pending.indexOf(f), 1)
-  })
+  // Event: a feature finished. Record it, then start whatever it unblocks.
+  const { slug, r } = await Promise.race(running.values())
+  running.delete(slug)
+  outcome[slug] = r || { slug, outcome: 'error', summary: 'the feature chain failed' }
 }
 return { mode: 'flow', results: A.features.map(f => outcome[f.slug]) }

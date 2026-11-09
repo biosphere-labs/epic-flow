@@ -36,8 +36,10 @@ You take part in the shaded stages. Everything after them runs unattended, and a
 
 - **One question session, then walk away.** Every open question across every feature is asked up front. Nothing interrupts you halfway through.
 - **Sequential or parallel, your call.** Before the build, you get both options, each with a time estimate, a risk level and the reasons behind that risk.
+- **Nothing waits that doesn't have to.** Work starts the moment its inputs exist. Even a sequential build prepares the next task, tests the last one and writes the acceptance tests while the current task is being built.
 - **Plans grounded in your code.** It reads your base branch and follows the libraries and patterns you already use.
-- **Proof, not claims.** Every acceptance criterion is tested through its real entry point. The test must then fail with the implementation disabled, and fail again with the entry point cut.
+- **Specified by example.** Every acceptance criterion carries concrete examples with real values, edge cases included, and those examples become the unit and acceptance tests.
+- **Proof, not claims.** Every criterion is tested through its real entry point. The test must then fail with the implementation disabled, and fail again with the entry point cut.
 - **Built for big work.** Several features or a whole app at once, ordered by what depends on what, and it can resume any time.
 - **Safe with your repo.** Work happens on feature branches in worktrees. It never pushes or opens a PR unless you say so.
 

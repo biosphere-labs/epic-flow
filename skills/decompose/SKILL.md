@@ -76,13 +76,13 @@ depends_on: []
 ```
 
 - **Outcome.** What is true when this task is finished.
-- **Criteria.** The acceptance criteria it serves, each quoted in full.
+- **Criteria.** The acceptance criteria it serves, each quoted in full with the examples this task makes true.
 - **Change.** Files to add or edit, and what changes in each, with names, data shapes and error behaviour written out.
 - **Builds against.** The contract declarations it imports, or with `contract: none` the seams and existing code it uses, with their signatures quoted.
 - **Depends on.** When it needs output no contract covers. One line per id saying what it needs. Sharing a file is never a reason.
 - **Follow.** The existing file to copy from and the specific pattern. Quote a short fragment from this repository. Never a sample from another stack.
 - **May edit** and **Leave alone.** Paths. A level 3 task edits bodies and private helpers, never an exported declaration or a contract test. With `contract: none`, a task may add the declarations it produces, and no others.
-- **Check.** The test that proves the outcome, and the real entry point it goes through when it serves a criterion. Then the falsification probe: what to disable, and the test that must then fail.
+- **Check.** The unit tests, one per example under **Criteria** plus any the task's own logic needs (each as given, when, then with real values), and the real entry point they go through when the task serves a criterion. Then the falsification probe: what to disable, and the test that must then fail.
 
 Each task carries everything inline. No "as in the plan", no pointer to another document for its content. Size each one so its brief holds a similar, self-contained load of context: split a task a builder could not hold in one context, and join tasks that are one change.
 

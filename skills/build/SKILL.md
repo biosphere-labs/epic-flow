@@ -47,14 +47,30 @@ Write `build shape: <sequential|parallel>, <n> tasks, <n> groups, <reason when i
 - Write `notes/build-groups.md`: the shape, each group's name, its task ids, the contracts it imports, and the groups it runs after (or "dependence unknown"). For a sequential build, also the task order.
 - On a rerun after verify reopened tasks, build only the `open` tasks, in the shape already in Delivery.
 
+## Working ahead
+
+The build is driven by events: each piece of work starts the moment what it needs exists, not when a whole step has finished. Under `epic-flow:run`, the run's workflow does this in code and gives each agent one part. Alone, do the same with background agents (the Agent tool, run in the background).
+
+### Prepare ahead
+
+While one task builds, a read-only agent prepares the next one's brief in `notes/briefs/<id>.md`: the task's text and examples, the files to open with the lines that matter quoted, the pattern to follow, and the seams it uses with their signatures. A builder starts from it instead of from a cold read. Anything a task still building could change is marked "check after <id>"; the builder confirms it.
+
+### Test as each task lands
+
+When a task is committed, a background agent runs that task's tests and its examples, in a scratch worktree at the feature branch tip, while the next task builds. A failure sets the task `open` with the diagnostic under **Check**, and the tasks that depend on it are not started. A break shows minutes after it lands, not at the end.
+
+### Acceptance tests during the build
+
+While the code is built, one agent writes the acceptance test for each criterion from its examples, through its entry point, against the seams the tasks and contracts define. It works in `<repo>/.worktrees/<slug>-acceptance/` on branch `<branch>-acceptance`, cut from the feature branch, commits there, and touches no product code. Verify merges that branch and runs the tests instead of writing them.
+
 ## Sequential
 
 - Work only in `<repo>/.worktrees/<slug>/` on the feature branch. No group worktrees, no group branches, no merge train.
-- Order: a topological order of the groups, and inside each group of its tasks by `depends_on`; ties by task id.
-- One fresh agent per task, one at a time, with the Agent tool. Its brief carries everything inline: the task's text, its criteria, the contract files to import, the paths it may edit, and the check. When the Agent tool is not available, do the tasks yourself in the same order.
+- Order: a topological order of the groups, and inside each group of its tasks by `depends_on`; ties by task id. Give each task's `depends_on` with the order, so a failure can stop exactly the tasks that need it.
+- One fresh agent per task, one product-code writer at a time. Its brief carries everything inline: the prepared brief when there is one, the task's text, its criteria and examples, the contract files to import, the paths it may edit, and the check. When the Agent tool is not available, do the tasks yourself in the same order.
 - Write `task <id> started` before the agent starts and `task <id> closed` when its check holds.
 - Each task: change bodies and private helpers, and, with `contract: none`, add the declarations it produces exactly as its **Change** writes them. Run its check and its falsification probe (the check fails with the implementation disabled and passes with it in place), then commit on the feature branch.
-- A task whose check fails stays `open`. Skip every task that depends on it, directly or through its group, and go on with the rest.
+- A task whose check fails, here or when its tests run after it lands, stays `open`. Skip every task that depends on it, directly or through its group, and go on with the rest.
 - A task that needs a seam changed: set it `blocked` with `contract change: <declaration>: <why>`. With a contract commit, run a small contract wave for that declaration only. With `contract: none`, rewrite the seam in its producing task and in every task that quotes it, and reopen any `closed` one that it changes. Then continue from that task.
 - After the last task: the compile or type check, the contract tests, and the full suite on the feature branch. A failure reopens the tasks whose code it points to, with the diagnostic under **Check**.
 
@@ -73,9 +89,10 @@ Write `build shape: <sequential|parallel>, <n> tasks, <n> groups, <reason when i
 
 ### Merge train
 
-- Line up finished groups. Test each on top of the ones ahead of it, each in its own scratch worktree, all at once. Merge onto the feature branch in order as each passes. Drop a failure, send its exact diagnostic to its group, and retest the ones behind it.
+- Merge finished groups one at a time, in the order they finish. Test each on top of the feature branch tip and merge it when every check passes. The moment a group merges, start every group that was waiting only for it.
+- A failure goes back to its group once, with the exact diagnostic. A group that fails the train twice stops, and so do the groups waiting for it.
 - Checks at the train: the merge, the compile or type check, the contract tests, the tests held back from the groups, the full suite.
-- A failure goes back to the group that owns it, with the exact diagnostic. No agent reconciles two diffs at the join.
+- No agent reconciles two diffs at the join.
 - A textual conflict inside one function means two groups owned the same node. Regroup; do not patch it at the join.
 - After the train, deduplicate convenience helpers that groups wrote separately, checked by the suite staying green before and after.
 
@@ -113,9 +130,10 @@ When every task is `closed`, leave the technical plan `in-progress`. Alone, stop
 - [ ] Every task has status `closed`, with a command, an exit code and a result under **Check**.
 - [ ] Every task has `task <id> started` and `task <id> closed` lines in `status.md`.
 - [ ] `notes/build-groups.md` names the shape and lists every task id in exactly one group, and gives the task order when sequential.
-- [ ] When sequential, no `<repo>/.worktrees/<slug>-*` worktree or `<branch>-*` branch was created by this build.
+- [ ] When sequential, the only `<repo>/.worktrees/<slug>-*` worktree or `<branch>-*` branch this build left is the acceptance one; scratch test worktrees were removed.
 - [ ] With a contract commit: the feature branch in `<repo>/.worktrees/<slug>/` contains it and has commits after it; `git diff <contract>` is empty for each `whole` contract file and touches only stub bodies in each `declarations` file, or `status.md` records a contract wave for each changed declaration.
 - [ ] With `contract: none`: the feature branch has a commit for each closed task, and each seam a task produced exists in the code with the signature that task wrote.
 - [ ] No commit this build made on the feature branch is on the base branch.
 - [ ] If Delivery says no push, the feature branch has no upstream. If a PR was opened, its URL is in `status.md`.
+- [ ] When an acceptance branch was written, it exists as `<branch>-acceptance` with a commit, and it changes only test files.
 - [ ] `status.md` has a `build finished` line.

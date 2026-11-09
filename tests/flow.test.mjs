@@ -15,7 +15,10 @@ async function run(args, script) {
   const agent = async (prompt, opts) => {
     calls.push(opts.label)
     seen[opts.label] = (seen[opts.label] || 0) + 1
-    return script(opts.label, prompt, seen[opts.label], opts)
+    const r = await script(opts.label, prompt, seen[opts.label], opts)
+    // Tests written before the build was orchestrated answer the build plan with "done": treat that as a plan with no tasks.
+    if (opts.label.endsWith(' build plan') && r && r.outcome === 'done') return { outcome: 'ready', summary: 's', shape: 'sequential', tasks: [] }
+    return r
   }
   const parallel = async thunks => Promise.all(thunks.map(t => t().catch(() => null)))
   const out = await body(args, agent, parallel, null, () => {}, () => {}, { total: null })
@@ -36,7 +39,7 @@ await test('happy path runs five stages, each checked once', async () => {
   const r = out.results[0]
   assert.equal(r.outcome, 'done'); assert.equal(r.stoppedAt, 'verify')
   assert.deepEqual(r.trail.map(t => t.stage), ['technical-plan', 'decompose', 'gaps', 'build', 'verify'])
-  assert.equal(calls.length, 10)
+  assert.equal(calls.length, 12) // build is plan, acceptance tests and finish, plus its check
 })
 
 await test('verify failing once sends the feature back to build, then passes', async () => {
@@ -49,7 +52,7 @@ await test('verify failing once sends the feature back to build, then passes', a
   const r = out.results[0]
   assert.equal(r.outcome, 'done')
   assert.deepEqual(r.trail.map(t => t.stage), ['build', 'verify', 'build', 'verify'])
-  const secondBuild = calls.filter(l => l === 'b build').length
+  const secondBuild = calls.filter(l => l === 'b build plan').length
   assert.equal(secondBuild, 2)
 })
 
@@ -58,7 +61,7 @@ await test('the rebuild prompt carries what verify reported', async () => {
   await run({ ...base, features: [{ slug: 'b', from: 'build', to: 'verify' }] },
     (label, prompt, n) => {
       if (label.endsWith('check')) return pass
-      if (label === 'b build' && n === 2) rebuildPrompt = prompt
+      if (label === 'b build plan' && n === 2) rebuildPrompt = prompt
       if (label === 'b verify' && n === 1) return { outcome: 'failed', summary: 'AC-2 not tested' }
       return done
     })
@@ -71,7 +74,7 @@ await test('verify failing every time stops after verifyRounds rebuilds', async 
     label => (label.endsWith('check') ? pass : label === 'c verify' ? { outcome: 'failed', summary: 'x' } : done))
   const r = out.results[0]
   assert.equal(r.outcome, 'failed'); assert.equal(r.stoppedAt, 'verify')
-  assert.equal(calls.filter(l => l === 'c build').length, 3)
+  assert.equal(calls.filter(l => l === 'c build plan').length, 3)
   assert.equal(calls.filter(l => l === 'c verify').length, 3)
 })
 
@@ -86,7 +89,7 @@ await test('gaps blocked stops the feature before build; another feature carries
   })
   const [d, e] = out.results
   assert.equal(d.outcome, 'blocked'); assert.equal(d.stoppedAt, 'gaps'); assert.deepEqual(d.questions, ['Q-2'])
-  assert.ok(!calls.includes('d build'))
+  assert.ok(!calls.includes('d build plan'))
   assert.equal(e.outcome, 'done')
 })
 
@@ -117,7 +120,7 @@ await test('a check that fails twice ends the feature with error', async () => {
   const { out, calls } = await run({ ...base, features: [{ slug: 'g', from: 'gaps', to: 'build' }] },
     label => (label.includes('check') ? { pass: false, problems: ['p'] } : done))
   assert.equal(out.results[0].outcome, 'error'); assert.equal(out.results[0].stoppedAt, 'gaps')
-  assert.ok(!calls.includes('g build'))
+  assert.ok(!calls.includes('g build plan'))
 })
 
 await test('a dead stage agent is an error, not a pass', async () => {
@@ -207,16 +210,16 @@ await test('a feature that comes after another is not started with it; independe
     { slug: 'c', from: 'build', to: 'build' },
   ]
   const { out } = await run({ ...base, features: feats }, s)
-  assert.ok(order.indexOf('c build') < order.indexOf('a build end'), 'independent a and c run together')
-  assert.ok(order.indexOf('b build') > order.indexOf('a build end'), 'b waits for a')
+  assert.ok(order.indexOf('c build plan') < order.indexOf('a build finish end'), 'independent a and c run together')
+  assert.ok(order.indexOf('b build plan') > order.indexOf('a build finish end'), 'b waits for a')
   assert.deepEqual(out.results.map(r => r.outcome), ['done', 'done', 'done'])
 })
 
 await test('a feature whose predecessor stopped is not started', async () => {
   const { out, calls } = await run({ ...base, features: [
     { slug: 'a', from: 'build', to: 'build' }, { slug: 'b', from: 'build', to: 'build', after: ['a'] }] },
-    label => (label.endsWith('check') ? pass : label === 'a build' ? { outcome: 'failed', summary: 'x' } : done))
-  assert.ok(!calls.includes('b build'))
+    label => (label.endsWith('check') ? pass : label === 'a build finish' ? { outcome: 'failed', summary: 'x' } : done))
+  assert.ok(!calls.includes('b build plan'))
   assert.equal(out.results[1].outcome, 'blocked')
 })
 
@@ -226,6 +229,139 @@ await test('an unknown or circular after is an error, not a guess', async () => 
     { slug: 'c', from: 'build', to: 'build', after: ['zzz'] }] }, label => (label.endsWith('check') ? pass : done))
   assert.equal(calls.length, 0)
   assert.deepEqual(out.results.map(r => r.outcome), ['error', 'error', 'error'])
+})
+
+
+// ---------- events ----------
+
+const sleep = ms => new Promise(r => setTimeout(r, ms))
+const ready = (extra) => ({ outcome: 'ready', summary: 's', ...extra })
+const closed = { outcome: 'closed', summary: 's' }
+const ok = { pass: true, summary: 's' }
+
+await test('a feature starts the moment the one it needs finishes, not when a slow unrelated one does', async () => {
+  const order = []
+  const s = async label => {
+    if (label.endsWith('check')) return pass
+    order.push(label)
+    if (label.startsWith('c ')) await sleep(40)
+    order.push(label + ' end')
+    return done
+  }
+  await run({ ...base, features: [
+    { slug: 'a', from: 'gaps', to: 'gaps' },
+    { slug: 'b', from: 'gaps', to: 'gaps', after: ['a'] },
+    { slug: 'c', from: 'gaps', to: 'gaps' },
+  ] }, s)
+  assert.ok(order.indexOf('b gaps') < order.indexOf('c gaps end'), 'b started before slow c finished')
+})
+
+await test('sequential: the next brief is prepared while the current task builds', async () => {
+  const order = []
+  const s = async label => {
+    order.push(label)
+    if (label.endsWith('build plan')) return ready({ shape: 'sequential', tasks: [{ id: '1' }, { id: '2' }, { id: '3' }] })
+    if (label.includes(' task ')) { await sleep(10); order.push(label + ' end'); return closed }
+    if (label.includes(' prepare ') || label.includes(' test ') || label.endsWith('acceptance tests')) return ok
+    return label.endsWith('check') ? pass : done
+  }
+  await run({ ...base, features: [{ slug: 's', from: 'build', to: 'build' }] }, s)
+  assert.ok(order.indexOf('s build prepare 2') < order.indexOf('s build task 1 end'), 'brief 2 prepared during task 1')
+  assert.ok(order.indexOf('s build prepare 3') < order.indexOf('s build task 2 end'), 'brief 3 prepared during task 2')
+  assert.ok(order.indexOf('s build test 1') < order.indexOf('s build task 2 end'), 'task 1 tested while task 2 builds')
+  assert.ok(order.indexOf('s build acceptance tests') < order.indexOf('s build task 1 end'), 'acceptance tests written alongside the build')
+  assert.equal(order.filter(l => /task \d$/.test(l)).length, 3)
+})
+
+await test('sequential: a task whose tests fail after landing stops the tasks that depend on it', async () => {
+  let finishPrompt = ''
+  const s = async (label, prompt) => {
+    if (label.endsWith('build plan')) return ready({ shape: 'sequential', tasks: [{ id: '1' }, { id: '2' }, { id: '3', dependsOn: ['1'] }] })
+    if (label === 't build test 1') return { pass: false, summary: 'AC-1 example 2 fails' }
+    if (label === 't build task 2') { await sleep(20); return closed }
+    if (label.includes(' task ')) return closed
+    if (label === 't build finish') { finishPrompt = prompt; return done }
+    return label.endsWith('check') ? pass : ok
+  }
+  const { calls } = await run({ ...base, features: [{ slug: 't', from: 'build', to: 'build' }] }, s)
+  assert.ok(!calls.includes('t build task 3'), 'task 3 depends on 1 and is never started')
+  assert.match(finishPrompt, /task 1 failed its tests after landing/)
+  assert.match(finishPrompt, /task 3 skipped/)
+})
+
+await test('sequential: an open task skips its dependents but not independent tasks', async () => {
+  const s = label => {
+    if (label.endsWith('build plan')) return ready({ shape: 'sequential', tasks: [{ id: '1' }, { id: '2', dependsOn: ['1'] }, { id: '3' }] })
+    if (label === 'u build task 1') return { outcome: 'open', summary: 'check failed' }
+    if (label.includes(' task ')) return closed
+    return label.endsWith('check') ? pass : label.endsWith('finish') ? done : ok
+  }
+  const { calls } = await run({ ...base, features: [{ slug: 'u', from: 'build', to: 'build' }] }, s)
+  assert.ok(!calls.includes('u build task 2'))
+  assert.ok(calls.includes('u build task 3'))
+})
+
+await test('sequential: a spent time budget starts no more tasks', async () => {
+  const s = label => {
+    if (label.endsWith('build plan')) return ready({ shape: 'sequential', tasks: [{ id: '1' }, { id: '2' }, { id: '3' }] })
+    if (label === 'v build task 2') return { outcome: 'budget', summary: 'spent' }
+    if (label.includes(' task ')) return closed
+    return label.endsWith('check') ? pass : label.endsWith('finish') ? done : ok
+  }
+  const { calls } = await run({ ...base, features: [{ slug: 'v', from: 'build', to: 'build' }] }, s)
+  assert.ok(!calls.includes('v build task 3'))
+})
+
+await test('parallel: a group starts when what it needs has merged; independent groups start at once', async () => {
+  const order = []
+  const s = async label => {
+    order.push(label)
+    if (label.endsWith('build plan')) return ready({ shape: 'parallel', groups: [
+      { name: 'a', tasks: ['1'] }, { name: 'b', tasks: ['2'], after: ['a'] }, { name: 'c', tasks: ['3'] }] })
+    if (label === 'p build group c') { await sleep(40); order.push(label + ' end'); return closed }
+    if (label.includes(' group ')) return closed
+    if (label.includes(' merge ')) { order.push(label + ' end'); return { merged: true } }
+    return label.endsWith('check') ? pass : label.endsWith('finish') ? done : ok
+  }
+  await run({ ...base, features: [{ slug: 'p', from: 'build', to: 'build' }] }, s)
+  assert.ok(order.indexOf('p build group c') < order.indexOf('p build merge a end'), 'a and c start together')
+  assert.ok(order.indexOf('p build group b') > order.indexOf('p build merge a end'), 'b waits for a to merge')
+  assert.ok(order.indexOf('p build group b') < order.indexOf('p build group c end'), 'b does not wait for c')
+})
+
+await test('parallel: the train sends a failing group back once with its diagnostic, then stops what needs it', async () => {
+  let retryPrompt = ''
+  const s = (label, prompt) => {
+    if (label.endsWith('build plan')) return ready({ shape: 'parallel', groups: [{ name: 'a', tasks: ['1'] }, { name: 'b', tasks: ['2'], after: ['a'] }] })
+    if (label === 'q build group a retry') retryPrompt = prompt
+    if (label.includes(' group ')) return closed
+    if (label === 'q build merge a') return { merged: false, diagnostic: 'TypeError at join' }
+    if (label.includes(' merge ')) return { merged: true }
+    return label.endsWith('check') ? pass : label.endsWith('finish') ? done : ok
+  }
+  const { calls } = await run({ ...base, features: [{ slug: 'q', from: 'build', to: 'build' }] }, s)
+  assert.match(retryPrompt, /TypeError at join/)
+  assert.equal(calls.filter(l => l === 'q build merge a').length, 2)
+  assert.ok(!calls.includes('q build group b'))
+})
+
+await test('parallel: merges happen one at a time', async () => {
+  let inTrain = 0, most = 0
+  const s = async label => {
+    if (label.endsWith('build plan')) return ready({ shape: 'parallel', groups: [{ name: 'a', tasks: ['1'] }, { name: 'b', tasks: ['2'] }, { name: 'c', tasks: ['3'] }] })
+    if (label.includes(' group ')) return closed
+    if (label.includes(' merge ')) { inTrain++; most = Math.max(most, inTrain); await sleep(5); inTrain--; return { merged: true } }
+    return label.endsWith('check') ? pass : label.endsWith('finish') ? done : ok
+  }
+  await run({ ...base, features: [{ slug: 'r', from: 'build', to: 'build' }] }, s)
+  assert.equal(most, 1)
+})
+
+await test('a build plan that is waiting stops before any builder', async () => {
+  const { out, calls } = await run({ ...base, features: [{ slug: 'x', from: 'build', to: 'verify' }] },
+    label => (label.endsWith('build plan') ? { outcome: 'waiting', summary: 'Q-9', questions: ['Q-9'] } : done))
+  assert.deepEqual(calls, ['x build plan'])
+  assert.equal(out.results[0].outcome, 'waiting'); assert.deepEqual(out.results[0].questions, ['Q-9'])
 })
 
 for (const r of results) console.log(r.join('  '))

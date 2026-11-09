@@ -19,9 +19,9 @@ Check the feature against its acceptance criteria. A `closed` task counts only a
 ## How to work
 
 1. Read `technical-plan.md`, every task, `questions.md` and `status.md`. If any task is not `closed`, stop: build has not finished. Write `verify started` to `status.md`.
-2. Work on the feature branch in `<repo>/.worktrees/<slug>/`. Confirm with `git -C <worktree> log -1` that it holds build's last commit (its merge train, when the build was parallel).
+2. Work on the feature branch in `<repo>/.worktrees/<slug>/`. Confirm with `git -C <worktree> log -1` that it holds build's last commit (its merge train, when the build was parallel). When branch `<branch>-acceptance` exists, merge it: it holds acceptance tests written during the build. It may contain test files only; anything else is a failed criterion for the task set, not something to merge.
 3. Re-run every task's check. Then run this project's own tests for the areas the tasks changed. Find the test command in the repository (package scripts, build files, CI config). Record each command, its exit code and the counts.
-4. For each criterion, find the test that proves it through the entry point the criterion names (the route, the subscription, the command, the scheduled job). If there is none, write it. Verify may add tests. It never changes product code.
+4. For each criterion, find the test that proves it through the entry point the criterion names (the route, the subscription, the command, the scheduled job), and check that it runs every one of the criterion's examples. If there is none, or an example is missing, write it. Verify may add tests. It never changes product code.
 5. Run two falsification probes for each criterion, and revert each one before the next:
    - **Disable the implementation.** Make the code the criterion is about return nothing or throw. The test must fail.
    - **Cut the entry point.** Remove the subscription, the route registration, the bean, or the job schedule. The test must fail.
