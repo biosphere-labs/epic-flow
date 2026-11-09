@@ -1,0 +1,11 @@
+{
+  "name": "epic-flow",
+  "owner": { "name": "Biosphere Labs" },
+  "plugins": [
+    {
+      "name": "epic-flow",
+      "source": "./",
+      "description": "Take an idea from a stub to verified, tested code, unattended after one question session, with an independent check after every stage."
+    }
+  ]
+}
