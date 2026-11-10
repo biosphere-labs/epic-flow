@@ -54,7 +54,7 @@ state: done
 
 ## Reply
 
-One line per idea with the full path of its `brief.md`, then one line naming the next stage: `epic-flow:brainstorm` for one, or `epic-flow:run` for several. Then go straight back to what the user was doing.
+One line per idea with the full path of its `brief.md`, then one line naming the next step: `/epic-flow:run <slug>` (or the slugs together), which starts with brainstorm. Then go straight back to what the user was doing.
 
 ## Done when
 

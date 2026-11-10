@@ -1,18 +1,6 @@
----
-name: brainstorm
-description: >
-  Draw an idea out of the user by Socratic, reverse-prompting questions, find
-  its constraints, and write an accepted brief (the PRD): problem, decisions,
-  approach, success and delivery, before any codebase plan. Stage 2 of Epic
-  Flow. Takes a parked idea, a draft, a plan file, a pasted list or findings report,
-  or a bare idea. Use when the user wants to brainstorm, write a PRD, develop
-  a parked idea, turn a rough idea or an existing plan into a brief, or runs
-  /epic-flow:brainstorm.
----
-
 # Epic Flow: Brainstorm
 
-Read `conventions.md` in the plugin root (two levels up from this skill's base directory) before anything else.
+Read `conventions.md` in the plugin root (one level up from this file) before anything else.
 
 Turn an idea into a brief the technical plan can build on. This stage decides the problem, the approach, what success means, and how the work is delivered. It stops at the approach. The technical plan chooses files.
 
@@ -21,7 +9,7 @@ Turn an idea into a brief the technical plan can build on. This stage decides th
 - A parked idea or a draft: `.epic-flow/<slug>/brief.md`.
 - A plan file, a pasted list or a findings report. These are input to this stage, never a reason to skip it. Decisions the source records as the user's are `answered`; the rest are `assumed`, with the source as **Source**. Put the source's path under **Where it came up**.
 - A list gives one brief per item. Items that are one change share a brief. Say which you joined in the draft.
-- A bare idea: park it first (see `epic-flow:idea`), then go on.
+- A bare idea: park it first (as `/epic-flow:idea` does), then go on.
 
 ## How to work
 
@@ -77,7 +65,7 @@ status: accepted
 
 Use `draft` while any question for this feature is `open` or the user has not chosen an approach. Open questions live in `questions.md`, not in the brief.
 
-Alone, stop when the brief is written. Give its full path. The next stage is `epic-flow:technical-plan`.
+Alone, stop when the brief is written. Give its full path. The next stage is technical plan.
 
 ## Done when
 

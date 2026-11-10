@@ -1,28 +1,15 @@
----
-name: build
-description: >
-  Build an Epic Flow plan from its tasks once the gap review is clear, in
-  the shape the user chose up front: sequential (one worktree, tasks in
-  dependency order, one fresh agent per task) or parallel (groups from the
-  dependence graph, one agent per group in its own worktree, then a merge
-  train). Offers both with time estimates, risk and reasons when no shape
-  was chosen. Sixth stage of Epic Flow. Use when the user wants to build,
-  implement or start the epic, run the tasks, or runs /epic-flow:build.
-  Does not replan.
----
-
 # Epic Flow: Build
 
-Read `conventions.md` in the plugin root, two levels up from this skill's base directory, before anything else.
+Read `conventions.md` in the plugin root (one level up from this file) before anything else.
 
 Build the tasks against the contract commit, or, with `contract: none`, against the seams the tasks write out. The technical plan and the task files are the spec.
 
 ## Before you start
 
-1. `gaps.md` has verdict `clear`. If not, stop and name `epic-flow:gaps`.
+1. `gaps.md` has verdict `clear`. If not, stop and name the gaps stage.
 2. No question in `questions.md` is `open`.
 3. Check every Delivery prerequisite in the brief with a command that shows it is there: reach the registry, reach the service, see that the variable is set without printing its value. A missing one becomes an `open` question naming what is missing. Set `status.md` to `waiting` and stop.
-4. `<repo>/.worktrees/<slug>/` is on the Delivery branch, and `contract:` is `none` or names a commit the branch contains. If not, stop and name `epic-flow:decompose`.
+4. `<repo>/.worktrees/<slug>/` is on the Delivery branch, and `contract:` is `none` or names a commit the branch contains. If not, stop and name the decompose stage.
 5. If the user said how to shape the build (two tasks per agent, a number of agents, an order), follow it. If the dependence graph makes it wrong, say why before deviating: alone, ask; under the run, write the reason to `status.md` and the report.
 6. Set the technical plan's status to `in-progress`.
 
@@ -104,7 +91,7 @@ With `contract: none`, every seam in the code matches the signature its producin
 
 - A task closes only when its check holds on the feature branch (after its merge, when parallel). Write the command, the exit code and the result under **Check** in the task file.
 - A failed check leaves the task `open`, with the failure under **Check**.
-- When the code and a task disagree, leave the task `open`, write what disagrees, and send it back to `epic-flow:gaps` before building it.
+- When the code and a task disagree, leave the task `open`, write what disagrees, and send it back to gaps before building it.
 
 ## Time budget
 
@@ -121,7 +108,7 @@ Report only what has finished, from `status.md` and git: tasks closed and groups
 
 ## When the build ends
 
-When every task is `closed`, leave the technical plan `in-progress`. Alone, stop and name `epic-flow:verify`. Under the run, return `done`. If tasks stay `open` because a check failed or the budget ran out, return `error` with their ids.
+When every task is `closed`, leave the technical plan `in-progress`. Alone, stop and name the verify stage. Under the run, return `done`. If tasks stay `open` because a check failed or the budget ran out, return `error` with their ids.
 
 ## Done when
 

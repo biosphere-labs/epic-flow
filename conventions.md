@@ -1,22 +1,22 @@
 # Epic Flow conventions
 
-Every Epic Flow skill and the run workflow follow this file. It is the contract between the stages: where the records live, what their front matter holds, which status values exist, and who may change what. A stage skill says what that stage decides. This file says how the stages fit together.
+Every Epic Flow stage and the run workflow follow this file. It is the contract between the stages: where the records live, what their front matter holds, which status values exist, and who may change what. A stage's file says what that stage decides. This file says how the stages fit together.
 
 ## Stages
 
-| # | Stage | Skill | Needs | Writes |
+| # | Stage | Instructions | Needs | Writes |
 | --- | --- | --- | --- | --- |
-| 1 | Idea | `epic-flow:idea` | an idea | `brief.md`, status `idea` |
-| 2 | Brainstorm | `epic-flow:brainstorm` | a parked idea, a draft, a plan file, a list, or an idea | `brief.md`, status `accepted` |
-| 3 | Technical plan | `epic-flow:technical-plan` | one or more accepted briefs | `technical-plan.md`, status `ready` |
-| 4 | Decompose | `epic-flow:decompose` | a `ready` technical plan | `tasks/NNN.md`, the contract commit or `contract: none` |
-| 5 | Gaps | `epic-flow:gaps` | the tasks, and the contract commit if any | `gaps.md`, edits to the tasks |
-| 6 | Build | `epic-flow:build` | gaps verdict `clear`, no `open` question | the code, task status |
-| 7 | Verify | `epic-flow:verify` | every task `closed` | `verify.md`, and closes the plan |
+| 1 | Idea | `/epic-flow:idea` | an idea | `brief.md`, status `idea` |
+| 2 | Brainstorm | `stages/brainstorm.md` | a parked idea, a draft, a plan file, a list, or an idea | `brief.md`, status `accepted` |
+| 3 | Technical plan | `stages/technical-plan.md` | one or more accepted briefs | `technical-plan.md`, status `ready` |
+| 4 | Decompose | `stages/decompose.md` | a `ready` technical plan | `tasks/NNN.md`, the contract commit or `contract: none` |
+| 5 | Gaps | `stages/gaps.md` | the tasks, and the contract commit if any | `gaps.md`, edits to the tasks |
+| 6 | Build | `stages/build.md` | gaps verdict `clear`, no `open` question | the code, task status |
+| 7 | Verify | `stages/verify.md` | every task `closed` | `verify.md`, and closes the plan |
 
-`epic-flow:run` runs any range of these stages on one feature or many. `epic-flow:status` reports where each feature is.
+The plugin has three commands. `/epic-flow:run` runs any range of these stages on one feature or many, including a single stage. `/epic-flow:idea` parks an idea. `/epic-flow:status` reports where each feature is. Stages 2 to 7 are not commands: their instructions are the files in `stages/`, which the run reads.
 
-`<plugin>` is the plugin root, two levels up from any stage skill's base directory.
+`<plugin>` is the plugin root: the folder that holds this file, `stages/` and `scripts/`.
 
 ## Records
 
@@ -174,7 +174,7 @@ Take the time from `date -u +%FT%TZ`. Each stage writes a line when it starts an
 
 ## Running alone and under the run
 
-- **Alone** (the user ran the stage): if the file this stage writes already exists, show what is there and ask before replacing it. At the end, stop and name the next stage.
+- **Alone** (the user ran one stage interactively through `/epic-flow:run`): if the file this stage writes already exists, show what is there and ask before replacing it. At the end, stop and name the next stage.
 - **Under `epic-flow:run`** (the prompt says so): nobody will answer during the run. Update existing records in place and log what changed in `status.md`. Never stop to ask for a go. End by returning one outcome:
   - `done`: the stage's **Done when** list holds.
   - `waiting`: an `open` question blocks it; the ids are in `status.md`.
@@ -202,7 +202,7 @@ After each stage, the run has an independent checker test that stage's **Done wh
 
 ## Build shape
 
-The user always chooses how build runs, and chooses when the work starts: in the `epic-flow:run` question session, or when `epic-flow:decompose` or `epic-flow:build` starts alone without one. Nothing asks them later. Once chosen, the run is unattended. The choice shapes decompose too: `parallel` gets a contract commit, `sequential` gets `contract: none` and a faster decompose. Say so in each option's description.
+The user always chooses how build runs, and chooses when the work starts: in the `epic-flow:run` question session, or when decompose or build runs alone without one. Nothing asks them later. Once chosen, the run is unattended. The choice shapes decompose too: `parallel` gets a contract commit, `sequential` gets `contract: none` and a faster decompose. Say so in each option's description.
 
 **Shape analysis.** Do it read-only and fast, to get to the choice quickly.
 

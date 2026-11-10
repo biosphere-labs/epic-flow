@@ -4,17 +4,17 @@
 
 ## The stages
 
-| # | Stage | Command | What it produces |
+| # | Stage | Run with | What it produces |
 | --- | --- | --- | --- |
 | 1 | Idea | `/epic-flow:idea` | Parks an idea in seconds, in your own words, and asks nothing |
-| 2 | Brainstorm | `/epic-flow:brainstorm` | An accepted brief: problem, decisions, approach, success, delivery |
-| 3 | Technical plan | `/epic-flow:technical-plan` | A plan grounded in your codebase, with numbered acceptance criteria |
-| 4 | Decompose | `/epic-flow:decompose` | Self-contained tasks, level by level: modules, then interfaces, then units |
-| 5 | Gaps | `/epic-flow:gaps` | Missing tasks found and added, then reviewed by two blind reviewers |
-| 6 | Build | `/epic-flow:build` | The code, built sequentially or in parallel |
-| 7 | Verify | `/epic-flow:verify` | Every acceptance criterion proven, or the responsible tasks reopened |
+| 2 | Brainstorm | `/epic-flow:run` | An accepted brief: problem, decisions, approach, success, delivery |
+| 3 | Technical plan | `/epic-flow:run` | A plan grounded in your codebase, with numbered acceptance criteria |
+| 4 | Decompose | `/epic-flow:run` | Self-contained tasks, level by level: modules, then interfaces, then units |
+| 5 | Gaps | `/epic-flow:run` | Missing tasks found and added, then reviewed by two blind reviewers |
+| 6 | Build | `/epic-flow:run` | The code, built sequentially or in parallel |
+| 7 | Verify | `/epic-flow:run` | Every acceptance criterion proven, or the responsible tasks reopened |
 
-Run one stage on its own, or a range of stages over many features with `/epic-flow:run`. The rules every stage follows are in [`conventions.md`](../conventions.md).
+`/epic-flow:run` takes features through any range of stages ("through decompose", "from gaps"), or runs a single stage with you there ("only gaps"). The rules every stage follows are in [`conventions.md`](../conventions.md).
 
 ## The run
 

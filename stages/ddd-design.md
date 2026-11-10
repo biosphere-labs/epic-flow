@@ -18,7 +18,7 @@ few rules at every scope, the skeleton comes out coherent and simple, and simple
    contexts and a context map that names each seam's kind (table below).
 3. **Tactical design,** one context at a time: aggregates, value objects, domain events, ports, and each
    invariant tied to the criteria that imply it.
-4. **Skeleton.** Materialise steps 2 and 3 as the contract wave in decompose's SKILL.md: compiling types, ports, stubs
+4. **Skeleton.** Materialise steps 2 and 3 as the contract wave in the decompose stage: compiling types, ports, stubs
    that throw the gap marker, and a red test for every criterion and every invariant.
 
 ## Kinds

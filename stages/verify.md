@@ -1,18 +1,6 @@
----
-name: verify
-description: >
-  Verify an Epic Flow feature against its acceptance criteria on the merged
-  branch: re-run every task check, write any missing acceptance test, run
-  falsification probes that disable the implementation and cut the entry
-  point, then close the plan when every criterion holds or reopen the tasks
-  that failed. Use when the user wants to verify, test, close or finish an
-  epic or feature, check acceptance criteria, or runs /epic-flow:verify.
-  Last stage of Epic Flow.
----
-
 # Epic Flow: Verify
 
-Read `conventions.md` in the plugin root (two levels up from this skill's base directory) before anything else.
+Read `conventions.md` in the plugin root (one level up from this file) before anything else.
 
 Check the feature against its acceptance criteria. A `closed` task counts only after its check runs again here. A criterion holds only when a test goes through the real entry point, passes, and fails under both probes.
 
@@ -60,7 +48,7 @@ result: passed | failed | waiting
 ## Then
 
 - **Every criterion held:** result `passed`. Set the plan's status to `closed`. Write `verify finished: passed` to `status.md` and set its state to `done`.
-- **Any criterion failed or not tested:** result `failed`. Reopen the tasks responsible: set each to `open`, and add one line under **Reopened** with the criterion, the evidence, and `verify`. When no task owns the gap, add a task numbered after the last one, with the conventions' front matter and the criterion in `criteria:`. Leave the plan `in-progress`. Write `verify finished: failed` with the criterion ids to `status.md`. Alone, name `epic-flow:build` as the next stage. Do not end by asking a question.
+- **Any criterion failed or not tested:** result `failed`. Reopen the tasks responsible: set each to `open`, and add one line under **Reopened** with the criterion, the evidence, and `verify`. When no task owns the gap, add a task numbered after the last one, with the conventions' front matter and the criterion in `criteria:`. Leave the plan `in-progress`. Write `verify finished: failed` with the criterion ids to `status.md`. Alone, name the build stage as the next stage. Do not end by asking a question.
 - **A criterion waits on the user and nothing failed:** result `waiting`. Write `verify waiting` with the question ids to `status.md` and set its state to `waiting`. Leave the plan `in-progress`.
 
 ## Done when

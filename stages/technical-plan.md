@@ -1,26 +1,12 @@
----
-name: technical-plan
-description: >
-  Write the technical plan for one or more accepted Epic Flow briefs by
-  exploring the existing codebase: the components needed, how each is
-  encapsulated and why, what already exists and whether to build on top
-  of it, beside it or instead of it, and numbered acceptance criteria
-  that each name the test that proves them. Third stage of Epic Flow,
-  after brainstorm and before decompose. Use when the user wants a
-  technical plan, a plan grounded in this repo, an epic, the next stage
-  after an accepted brief, or runs /epic-flow:technical-plan. Does not
-  decompose tasks or write code.
----
-
 # Epic Flow: Technical plan
 
-Read `conventions.md` in the plugin root (two levels up from this skill's base directory) before anything else.
+Read `conventions.md` in the plugin root (one level up from this file) before anything else.
 
 Turn accepted briefs into a plan of this change in this codebase. Stay high level: components, boundaries, and how they sit next to what exists. Decompose turns it into code structures and tasks.
 
 ## How to work
 
-1. Read every brief this plan builds. Each must be `accepted`. If one is `idea` or `draft`, stop and name `epic-flow:brainstorm`. Several briefs make one combined plan with its own slug: list them in `briefs:` and set `plan: <slug>` in each source brief.
+1. Read every brief this plan builds. Each must be `accepted`. If one is `idea` or `draft`, stop and name the brainstorm stage. Several briefs make one combined plan with its own slug: list them in `briefs:` and set `plan: <slug>` in each source brief.
 2. Read `questions.md` for each brief. Every `answered` and `assumed` entry is decided. An `open` entry that this plan depends on stops the plan.
 3. Plan against the tip of the Delivery base branch. Run `git fetch` when there is a remote, then read the code at `<base>`, not whatever branch the main checkout has open. Record the sha you read in **Builds**.
 4. Find where the change lives. Open the modules it touches, the patterns around them, and the docs that define current behaviour. Name only paths and types you opened.

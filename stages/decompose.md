@@ -1,27 +1,12 @@
----
-name: decompose
-description: >
-  Decompose a ready Epic Flow technical plan level by level: modules and
-  boundaries, then interfaces and data shapes (as compiling stubs with
-  contract tests in a contract commit for a parallel build, or written into
-  the tasks for a sequential one), then units.
-  Each level writes the tasks that are now detailed enough to build,
-  each one self-contained and sized to a balanced load of context.
-  Fourth stage of Epic Flow, after technical plan and before gaps. Use
-  when the user wants to decompose a plan or epic, break it into tasks,
-  write the stubs or contracts first, or runs /epic-flow:decompose.
-  Writes contract code only, never implementation bodies.
----
-
 # Epic Flow: Decompose
 
-Read `conventions.md` in the plugin root (two levels up from this skill's base directory) before anything else.
+Read `conventions.md` in the plugin root (one level up from this file) before anything else.
 
 Add detail one level at a time until a builder can execute every task without the planning conversation. At each level, the work that is now fully specified becomes a task. The rest goes down to the next level. The builder should never have to invent a path, a name, a data shape, an error case or a check.
 
 ## Before the first level
 
-1. Read `technical-plan.md`. If it is missing or not `ready`, stop and name `epic-flow:technical-plan`.
+1. Read `technical-plan.md`. If it is missing or not `ready`, stop and name the technical plan stage.
 2. Read every brief in `briefs:` and `questions.md`. Take the base branch and branch from Delivery. If the briefs' Delivery sections disagree, that is an `open` question.
 3. Create `<repo>/.worktrees/<slug>/` on the Delivery branch, cut from the tip of the base branch. Reuse it if it exists.
 4. Open every path the plan names, and the nearest existing code a builder should copy from.

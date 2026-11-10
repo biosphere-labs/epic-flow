@@ -34,7 +34,7 @@ flowchart LR
 
 You take part in the shaded stages. Everything after them runs unattended, and an independent checker tests each stage's output from the files before the next one starts.
 
-- **One question session, then walk away.** Every open question across every feature is asked up front. Nothing interrupts you halfway through.
+- **One question session, then walk away.** Every open question across every feature is asked up front. Nothing needs your input halfway through.
 - **Sequential or parallel, your call.** Before the build, you get both options, each with a time estimate, a risk level and the reasons behind that risk.
 - **Nothing waits that doesn't have to.** Work starts the moment its inputs exist. Even a sequential build prepares the next task, tests the last one and writes the acceptance tests while the current task is being built.
 - **Plans grounded in your code.** It reads your base branch and follows the libraries and patterns you already use.
@@ -47,13 +47,14 @@ You take part in the shaded stages. Everything after them runs unattended, and a
 
 | Command | What it does |
 | --- | --- |
-| `/epic-flow:run` | Runs any range of stages over one feature or many |
 | `/epic-flow:idea` | Parks an idea in seconds |
+| `/epic-flow:run` | Takes features through the stages, or runs one stage ("only gaps") |
 | `/epic-flow:status` | Shows where every feature is and what to run next |
-| `/epic-flow:<stage>` | Runs one stage: `brainstorm`, `technical-plan`, `decompose`, `gaps`, `build`, `verify` |
+
+That's the whole interface: three commands.
 
 **[How it works in detail →](docs/how-it-works.md)**
 
 ## Status
 
-This is the first release, 0.1.0. MIT licensed.
+This is an early release (0.1.1). MIT licensed.

@@ -1,18 +1,17 @@
 ---
 name: run
 description: >
-  Run Epic Flow over one feature or many, across any range of stages: one
-  question session with the user up front, then technical plan, decompose,
-  gaps, build and verify unattended, independent features in parallel and dependent ones in order, each stage
-  checked from the files. Use when the user says "do Epic Flow on these",
-  "run the whole flow", "take these ideas through to build", "do these five
-  but stop at decompose", "carry on with the epics", "resume the run", or
-  runs /epic-flow:run. Starts a workflow.
+  Run Epic Flow over one feature or many, across any range of stages
+  (brainstorm, technical plan, decompose, gaps, build, verify), or a single
+  stage with the user present: one question session up front, then the rest
+  unattended, each stage checked from the files. Use when the user runs
+  /epic-flow:run, or asks to run Epic Flow, take Epic Flow features through
+  to build, resume an Epic Flow run, or run one Epic Flow stage.
 ---
 
 # Epic Flow: Run
 
-Read `conventions.md` in the plugin root (two levels up from this skill's base directory) before anything else. `<plugin>` below is that root.
+Read `conventions.md` in the plugin root (two levels up from this skill's base directory) before anything else. `<plugin>` below is that root. Each stage's instructions are in `<plugin>/stages/<stage>.md`.
 
 Take features through a range of stages without the user starting each one. They answer questions once, up front, and can leave. This skill gathers the features, runs the question session, starts the workflow, and reports.
 
@@ -22,10 +21,12 @@ What, in any mix:
 
 - Slugs of features in `.epic-flow/`.
 - Parked ideas, plan files, or a folder of them.
-- A pasted list of ideas. Each item is parked first, as `epic-flow:idea` writes it.
+- A pasted list of ideas. Each item is parked first, as `/epic-flow:idea` writes it.
 - Nothing: every feature in `.epic-flow/` whose technical plan is not `closed`.
 
 How far, in the user's words: "through decompose", "from gaps", "only verify", "stop before build". No range means each feature from its next stage through verify. One range applies to every feature unless they name one per feature.
+
+**One stage, with the user here.** When the range is a single stage for one feature ("only gaps", "just brainstorm", "decompose this one") and the user has not said to leave it unattended, run that stage in this conversation: read `<plugin>/stages/<stage>.md` and follow it as the conventions' **Alone** says. Skip the workflow and the steps below. Brainstorm always runs this way for a single feature: it is a conversation with the user.
 
 ## 2. Where each feature is
 

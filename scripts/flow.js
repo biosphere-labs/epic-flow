@@ -19,7 +19,7 @@ if (!A.repo || !A.pluginRoot || !Array.isArray(A.features) || A.features.length 
 const VERIFY_ROUNDS = Number.isInteger(A.verifyRounds) ? A.verifyRounds : 2
 
 const CONVENTIONS = `${A.pluginRoot}/conventions.md`
-const skillFile = name => `${A.pluginRoot}/skills/${name}/SKILL.md`
+const skillFile = name => `${A.pluginRoot}/stages/${name}.md`
 const records = slug => `${A.repo}/.epic-flow/${slug}`
 const AGENT = { agentType: 'general-purpose' }
 

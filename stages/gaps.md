@@ -1,17 +1,6 @@
----
-name: gaps
-description: >
-  Find what the decomposed tasks still miss now that the work is visible at
-  the level of interfaces and units: the tasks that emerge, the seams nobody
-  wired, the choices a builder would have to invent. Adds and fixes tasks,
-  then reviews them with two blind reviewers. Fifth stage of Epic Flow. Use
-  when the user wants a gap analysis, a gap review, a cross-model review of
-  the tasks, or runs /epic-flow:gaps. Writes no product code.
----
-
 # Epic Flow: Gaps
 
-Read `conventions.md` in the plugin root, two levels up from this skill's base directory, before anything else.
+Read `conventions.md` in the plugin root (one level up from this file) before anything else.
 
 Decompose brought the plan down to modules, interfaces and units. At that level new work shows up: wiring nobody listed, a migration, a config entry, an error path, a test. This stage finds it and adds it, so the build has nothing left to invent.
 
@@ -83,7 +72,7 @@ round: 1
 - **Findings.** Each remaining review note: what is wrong, which file, what would resolve it.
 - **Unresolved.** Empty when `clear`. Otherwise the open question ids.
 
-Alone, stop and name `epic-flow:build`. Under the run, a `blocked` verdict returns `blocked`, and `status.md` is `waiting` with the question ids.
+Alone, stop and name the build stage. Under the run, a `blocked` verdict returns `blocked`, and `status.md` is `waiting` with the question ids.
 
 ## Done when
 

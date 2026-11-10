@@ -148,7 +148,7 @@ await test('stage prompts point at the stage skill and the conventions', async (
   let p = ''
   await run({ ...base, features: [{ slug: 'k', from: 'gaps', to: 'gaps' }] },
     (label, prompt) => { if (label === 'k gaps') p = prompt; return label.endsWith('check') ? pass : done })
-  assert.match(p, /\/p\/skills\/gaps\/SKILL\.md/)
+  assert.match(p, /\/p\/stages\/gaps\.md/)
   assert.match(p, /\/p\/conventions\.md/)
   assert.match(p, /\/r\/\.epic-flow\/k\//)
 })

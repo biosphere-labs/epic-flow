@@ -16,17 +16,17 @@ Report where each feature is and what runs next. This skill reads files only. It
 
 ## The stages, in order
 
-| # | Stage | Command | Writes |
+| # | Stage | Instructions | Writes |
 | --- | --- | --- | --- |
 | 1 | Idea | `/epic-flow:idea` | `brief.md`, `idea` |
-| 2 | Brainstorm | `/epic-flow:brainstorm` | `brief.md`, `accepted` |
-| 3 | Technical plan | `/epic-flow:technical-plan` | `technical-plan.md`, `ready` |
-| 4 | Decompose | `/epic-flow:decompose` | `tasks/NNN.md`, the contract commit or `contract: none` |
-| 5 | Gaps | `/epic-flow:gaps` | `gaps.md` |
-| 6 | Build | `/epic-flow:build` | the code, task status |
-| 7 | Verify | `/epic-flow:verify` | `verify.md`, closes the plan |
+| 2 | Brainstorm | `stages/brainstorm.md` | `brief.md`, `accepted` |
+| 3 | Technical plan | `stages/technical-plan.md` | `technical-plan.md`, `ready` |
+| 4 | Decompose | `stages/decompose.md` | `tasks/NNN.md`, the contract commit or `contract: none` |
+| 5 | Gaps | `stages/gaps.md` | `gaps.md` |
+| 6 | Build | `stages/build.md` | the code, task status |
+| 7 | Verify | `stages/verify.md` | `verify.md`, closes the plan |
 
-`/epic-flow:run` runs a range of stages over one feature or many.
+`/epic-flow:run` runs a range of stages over one feature or many, including one stage on its own.
 
 ## How to work
 
@@ -45,7 +45,7 @@ Report where each feature is and what runs next. This skill reads files only. It
 5. Pick the next command:
    - Open questions block the next stage: `/epic-flow:run <slug>`, which asks them first.
    - The state is `waiting` or `stopped`: `/epic-flow:run <slug>`, which resumes from `status.md`.
-   - Otherwise: `/epic-flow:<next stage> <slug>`.
+   - Otherwise: `/epic-flow:run <slug>` to carry on, or `/epic-flow:run <slug> only <next stage>` for just that stage.
 
 ## Report
 
