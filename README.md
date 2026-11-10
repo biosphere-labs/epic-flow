@@ -55,6 +55,16 @@ That's the whole interface: three commands.
 
 **[How it works in detail →](docs/how-it-works.md)**
 
+## What it does on your machine
+
+Epic Flow works through Claude Code's own tools, in the repository you run it in. It has no server, no telemetry and no credentials of its own.
+
+- **Files:** writes its records under `.epic-flow/` and works in git worktrees under `.worktrees/`, which it adds to `.git/info/exclude`.
+- **Git:** creates the feature branch you name in delivery (and short-lived branches for parallel groups and acceptance tests), and commits there. It never commits on your base branch.
+- **Commands:** runs your project's own type check and tests, `git`, and `scripts/slice.mjs` (a bundled, readable Node script that maps which code calls which). Reads the machine's core count and load (`sysctl`/`nproc`, `uptime`) to size parallel builds.
+- **Agents:** starts Claude subagents, through the Workflow tool when available, to do each stage.
+- **Network:** `git fetch` when the repository has a remote; a web lookup when a brief names a reference product to follow; `git push` and a pull request only when you said so in delivery.
+
 ## Status
 
 This is an early release (0.1.1). MIT licensed.
