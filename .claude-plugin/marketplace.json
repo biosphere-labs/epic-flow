@@ -1,6 +1,9 @@
 {
   "name": "epic-flow",
-  "owner": { "name": "Biosphere Labs" },
+  "description": "Epic Flow by Biosphere Labs: take an idea to verified, tested code, unattended after one question session.",
+  "owner": {
+    "name": "Biosphere Labs"
+  },
   "plugins": [
     {
       "name": "epic-flow",
