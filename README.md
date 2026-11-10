@@ -67,4 +67,4 @@ Epic Flow works through Claude Code's own tools, in the repository you run it in
 
 ## Status
 
-This is an early release (0.1.1). MIT licensed.
+This is an early release (0.1.1). MIT licensed. [Privacy policy](PRIVACY.md).

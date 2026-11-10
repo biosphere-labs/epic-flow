@@ -10,6 +10,7 @@
   "repository": "https://github.com/biosphere-labs/epic-flow",
   "documentationUrl": "https://github.com/biosphere-labs/epic-flow/blob/main/docs/how-it-works.md",
   "supportUrl": "https://github.com/biosphere-labs/epic-flow/issues",
+  "privacyPolicyUrl": "https://github.com/biosphere-labs/epic-flow/blob/main/PRIVACY.md",
   "license": "MIT",
   "keywords": [
     "workflow",
