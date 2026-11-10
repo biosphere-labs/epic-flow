@@ -1,8 +1,6 @@
 # Epic Flow
 
-**Keep the insight. Delegate the craft. Understand both.**
-
-From an idea to verified, tested code. You answer the questions once, and Epic Flow does the rest.
+**From an idea to verified, tested code. You answer the questions once. It does the rest.**
 
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-D97757)](https://code.claude.com/docs/en/plugins)
 [![Version](https://img.shields.io/github/v/release/biosphere-labs/epic-flow?include_prereleases&label=version)](https://github.com/biosphere-labs/epic-flow/releases)
@@ -17,7 +15,7 @@ From an idea to verified, tested code. You answer the questions once, and Epic F
 
 ## Why
 
-Building with coding agents, I kept having to stay through every stage: the plan, the task breakdown, the review, the build, the final check. My presence was required, but beyond steering I wasn't adding much, and the steering turned out to be the easiest part to automate. So I automated it.
+Keep the insight. Delegate the craft. Understand both.
 
 ## How it works
 
