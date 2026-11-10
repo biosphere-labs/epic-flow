@@ -1,6 +1,8 @@
 # Epic Flow
 
-**From an idea to verified, tested code. You answer the questions once. It does the rest.**
+**Keep the insight. Delegate the craft. Understand both.**
+
+From an idea to verified, tested code. You answer the questions once, and Epic Flow does the rest.
 
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-D97757)](https://code.claude.com/docs/en/plugins)
 [![Version](https://img.shields.io/github/v/release/biosphere-labs/epic-flow?include_prereleases&label=version)](https://github.com/biosphere-labs/epic-flow/releases)
