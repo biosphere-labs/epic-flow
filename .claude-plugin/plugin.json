@@ -12,6 +12,7 @@
   "supportUrl": "https://github.com/biosphere-labs/epic-flow/issues",
   "privacyPolicyUrl": "https://github.com/biosphere-labs/epic-flow/blob/main/PRIVACY.md",
   "license": "MIT",
+  "workflows": "./scripts/flow.js",
   "keywords": [
     "workflow",
     "planning",

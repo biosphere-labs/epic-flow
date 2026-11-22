@@ -14,7 +14,7 @@ Epic Flow runs inside Claude Code, in the repository you run it in, through Clau
 - It writes its records under `.epic-flow/` and works in git worktrees under `.worktrees/`.
 - It runs your project's own checks and tests, `git`, and its bundled `scripts/slice.mjs`, and reads the machine's core count and load.
 
-All of this stays on your machine.
+The records and worktrees are stored in your repository.
 
 ## What leaves your machine
 
