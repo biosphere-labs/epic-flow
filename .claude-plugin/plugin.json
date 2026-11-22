@@ -1,8 +1,8 @@
 {
   "name": "epic-flow",
   "displayName": "Epic Flow",
-  "version": "0.1.1",
-  "description": "Take an idea to verified, tested code. Answer the questions once, then it plans, decomposes, reviews, builds (sequentially or in parallel, your choice, with time and risk estimates) and verifies unattended, with an independent check after every stage.",
+  "version": "0.1.2",
+  "description": "Take an idea to verified, tested code. Answer the questions once, then it plans, decomposes, reviews, builds (sequentially or in parallel, your choice, with time and risk estimates) and verifies unattended, with an independent check after completed stages from technical plan through verify.",
   "author": {
     "name": "Biosphere Labs"
   },
