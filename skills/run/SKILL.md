@@ -30,7 +30,7 @@ How far, in the user's words: "through decompose", "from gaps", "only verify", "
 
 ## 2. Where each feature is
 
-Take each feature's next stage from `status.md`. When `status.md` is missing, take it from the records:
+Read the plan and status together. A passing verify candidate with an in-progress plan always resumes at verify, even if status already says done or is missing. Otherwise take each feature's next stage from `status.md`. When `status.md` is missing, take it from the records:
 
 | Records | Next stage |
 | --- | --- |
@@ -49,10 +49,10 @@ Show one line per feature: slug, next stage, last stage in this run. Go on witho
 
 ## 3. Develop the briefs
 
-Invoke the installed plugin workflow by its namespaced name `/epic-flow:epic-flow` with the following structured args. If the workflow is unavailable, the parent coordinates a fresh questioner and answerer per round using brainstorm.md, then continues to the question session. In either path, stop if a required agent is unavailable.
+Only send features whose next stage is brainstorm. Skip develop entirely when resuming accepted features. Set unattended to the user’s current no-questions choice. Invoke the installed plugin workflow by its namespaced name `/epic-flow:epic-flow` with the following structured args. If the workflow is unavailable, the parent coordinates a fresh questioner and answerer per round using brainstorm.md, then continues to the question session. In either path, stop if a required agent is unavailable.
 
 ```js
-{ mode: "develop", repo: "<repo>", pluginRoot: "<plugin>", unattended: false,
+{ mode: "develop", repo: "<repo>", pluginRoot: "<plugin>", unattended: <true when the user asked not to be asked>,
   features: [{ slug: "<slug>", source: "<source path>" }] }
 ```
 
