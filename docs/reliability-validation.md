@@ -44,3 +44,5 @@ The scheduler now requests and awaits a record of the first rejection before dis
 The hidden-index check also traverses initialized submodules recursively. Real Git tests cover both index flags in direct and nested submodules, with ordinary dirty edits rejected as a control and no remote ref created on rejection.
 
 An independent targeted recheck confirmed the corrected rejection ordering, stopped records for scheduler-generated errors, and hidden-edit rejection in direct and nested submodules. It reran both suites and its own failure probes. The conclusion is limited to scheduler/helper behavior; native host coverage is described separately above.
+
+A follow-up read-only probe using the installed CLI's supported `sonnet` alias also returned HTTP 429 / `usage_limit_reached`, with zero input/output tokens and no subagents. The alternate-model probe therefore did not provide a way to execute the native Claude test.
